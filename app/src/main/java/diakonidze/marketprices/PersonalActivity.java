@@ -8,16 +8,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class PersonalActivity extends AppCompatActivity {
 
-    Context mContext = MainActivity.this;
+    Context mContext = PersonalActivity.this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_personal);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -26,7 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (menuItem.getItemId()){
                     case R.id.bnm_promotion:
-
+                        Intent intent1 = new Intent(mContext, MainActivity.class);
+                        startActivity(intent1);
                         break;
                     case R.id.bnm_search:
                         Intent intent2 = new Intent(mContext, SearchActivity.class);
@@ -41,8 +41,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent4);
                         break;
                     case R.id.bnm_user:
-                        Intent intent5 = new Intent(mContext, PersonalActivity.class);
-                        startActivity(intent5);
+
                         break;
                 }
                 overridePendingTransition(0, 0);
@@ -51,12 +50,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Menu bottomMenu = bottomNavigationView.getMenu();
-        MenuItem menuItem = bottomMenu.getItem(0);
+        MenuItem menuItem = bottomMenu.getItem(4);
         menuItem.setChecked(true);
-
-    }
-
-    private void showText(String text) {
-        Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
     }
 }

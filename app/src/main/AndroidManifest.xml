@@ -16,6 +16,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SearchActivity" />
+        <activity android:name=".AddActivity" />
+        <activity android:name=".MyListActivity" />
+        <activity android:name=".PersonalActivity"></activity>
     </application>
 
 </manifest>

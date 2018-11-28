@@ -8,16 +8,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity {
 
-    Context mContext = MainActivity.this;
+    Context mContext = SearchActivity.this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_search);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -26,11 +25,11 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (menuItem.getItemId()){
                     case R.id.bnm_promotion:
-
+                        Intent intent1 = new Intent(mContext, MainActivity.class);
+                        startActivity(intent1);
                         break;
                     case R.id.bnm_search:
-                        Intent intent2 = new Intent(mContext, SearchActivity.class);
-                        startActivity(intent2);
+
                         break;
                     case R.id.bnm_add:
                         Intent intent3 = new Intent(mContext, AddActivity.class);
@@ -51,12 +50,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Menu bottomMenu = bottomNavigationView.getMenu();
-        MenuItem menuItem = bottomMenu.getItem(0);
+        MenuItem menuItem = bottomMenu.getItem(1);
         menuItem.setChecked(true);
-
-    }
-
-    private void showText(String text) {
-        Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
     }
 }

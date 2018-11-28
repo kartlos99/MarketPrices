@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="82dp"
         android:layout_height="20dp"
-        android:text="Hello World!"
+        android:text="აქციები"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.026"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -58,8 +58,8 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#e3ffffff"
-        android:elevation="4dp"
+        android:background="@color/colorBottomNavBack"
+        android:elevation="@dimen/elevationDef"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
