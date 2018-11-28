@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MarketPrices</string>
+    <string name="enter_prod_name">პროდუქტის დასახელება</string>
+    <string name="product_image_description">არჩეული პროდუქტის ფოტო</string>
 </resources>
