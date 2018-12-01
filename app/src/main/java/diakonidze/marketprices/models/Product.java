@@ -3,6 +3,7 @@ package diakonidze.marketprices.models;
 public class Product {
     private int id, typeID;
     private String name, typeName, groupName;
+    private String image;
 
     public Product(int id, String name) {
         this.id = id;
@@ -17,6 +18,7 @@ public class Product {
                 ", name='" + name + '\'' +
                 ", typeName='" + typeName + '\'' +
                 ", groupName='" + groupName + '\'' +
+                ", image='" + image + '\'' +
                 '}';
     }
 
@@ -64,4 +66,13 @@ public class Product {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
 }

@@ -3,11 +3,12 @@
     android:orientation="horizontal"
     android:padding="4dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="60dp">
 
     <ImageView
         android:id="@+id/img_prod_in_list"
         android:src="@drawable/ic_no_image"
+        android:scaleType="centerCrop"
         android:layout_width="@dimen/image_size_in_dropdown"
         android:layout_height="@dimen/image_size_in_dropdown" />
 

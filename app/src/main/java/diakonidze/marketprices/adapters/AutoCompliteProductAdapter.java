@@ -3,18 +3,24 @@ package diakonidze.marketprices.adapters;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.util.Constants;
 
 public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
 
@@ -40,10 +46,20 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
         }
 
         TextView textViewName = convertView.findViewById(R.id.tv_prod_name);
+        ImageView imageView = convertView.findViewById(R.id.img_prod_in_list);
 
         Product product = getItem(position);
         if (product != null){
             textViewName.setText(product.getName());
+
+            if (product.getImage().isEmpty()){
+                imageView.setImageResource(R.drawable.ic_no_image);
+            } else {
+                Log.d("IMAGE", product.getImage());
+                Picasso.get()
+                        .load(Constants.HOST_URL + product.getImage())
+                        .into(imageView);
+            }
         }
 
         return convertView;
@@ -53,10 +69,11 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
         @Override
         protected FilterResults performFiltering(CharSequence typedtext) {
 
+            Log.d("text", typedtext.toString());
             FilterResults results = new FilterResults();
             List<Product> suggestion = new ArrayList<>();
 
-            if (typedtext == null || typedtext.length() == 0){
+            if ( typedtext.length() == 0){
                 suggestion.addAll(productsFullList);
             } else {
                 String filterPatern = typedtext.toString().trim();
@@ -68,18 +85,21 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
             }
 
             filteredProductList = new ArrayList<>(suggestion);
-            results.values = suggestion;
-            results.count = suggestion.size();
-
+//            results.values = suggestion;
+//            results.count = suggestion.size();
             return results;
         }
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             clear();
-//            List<Product> filteredList = (ArrayList<Product>) filterResults.values;
-            addAll(filteredProductList);
+
+            if (filteredProductList != null) {
+                addAll(filteredProductList);
+            }
+
             notifyDataSetChanged();
+            Log.d("publishRes", "changed");
         }
     };
 

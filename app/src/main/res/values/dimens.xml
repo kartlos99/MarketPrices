@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="elevationDef">4dp</dimen>
-    <dimen name="image_size_in_dropdown">60dp</dimen>
+    <dimen name="image_size_in_dropdown">52dp</dimen>
 </resources>
