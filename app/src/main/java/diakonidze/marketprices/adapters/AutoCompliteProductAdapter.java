@@ -57,7 +57,7 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
             } else {
                 Log.d("IMAGE", product.getImage());
                 Picasso.get()
-                        .load(Constants.HOST_URL + product.getImage())
+                        .load(Constants.HOST_URL + Constants.IMAGES_FOLDER + product.getImage())
                         .into(imageView);
             }
         }

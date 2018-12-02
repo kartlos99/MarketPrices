@@ -2,12 +2,17 @@ package diakonidze.marketprices;
 
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import diakonidze.marketprices.util.BottomNavigationViewHelper;
+import diakonidze.marketprices.util.Constants;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -15,6 +20,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     Context mContext = MainActivity.this;
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,28 +32,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                switch (menuItem.getItemId()){
-                    case R.id.bnm_promotion:
+                if (Constants.COMPLITE_INITIAL_DOWNLOADS) {
+                    switch (menuItem.getItemId()) {
+                        case R.id.bnm_promotion:
 
-                        break;
-                    case R.id.bnm_search:
-                        Intent intent2 = new Intent(mContext, SearchActivity.class);
-                        startActivity(intent2);
-                        break;
-                    case R.id.bnm_add:
-                        Intent intent3 = new Intent(mContext, AddActivity.class);
-                        startActivity(intent3);
-                        break;
-                    case R.id.bnm_mylist:
-                        Intent intent4 = new Intent(mContext, MyListActivity.class);
-                        startActivity(intent4);
-                        break;
-                    case R.id.bnm_user:
-                        Intent intent5 = new Intent(mContext, PersonalActivity.class);
-                        startActivity(intent5);
-                        break;
+                            break;
+                        case R.id.bnm_search:
+                            Intent intent2 = new Intent(mContext, SearchActivity.class);
+                            startActivity(intent2);
+                            break;
+                        case R.id.bnm_add:
+                            Intent intent3 = new Intent(mContext, AddActivity.class);
+                            startActivity(intent3);
+                            break;
+                        case R.id.bnm_mylist:
+                            Intent intent4 = new Intent(mContext, MyListActivity.class);
+                            startActivity(intent4);
+                            break;
+                        case R.id.bnm_user:
+                            Intent intent5 = new Intent(mContext, PersonalActivity.class);
+                            startActivity(intent5);
+                            break;
+                    }
+                    overridePendingTransition(0, 0);
+                } else {
+                    Constants.showtext(mContext, "weit for inialization");
                 }
-                overridePendingTransition(0, 0);
+
+                //Sibling transitions
                 return false;
             }
         });
@@ -56,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
         MenuItem menuItem = bottomMenu.getItem(0);
         menuItem.setChecked(true);
 
+        if (!Constants.COMPLITE_INITIAL_DOWNLOADS) {
+            long time= System.currentTimeMillis();
+            Log.d(TAG, " Time value in millisecinds "+time);
+
+            Constants.fill_prodList(mContext);
+        }
     }
 
     private void showText(String text) {

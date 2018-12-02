@@ -3,28 +3,23 @@
 
     <item
         android:id="@+id/bnm_promotion"
-        android:title="აქციები"
-        android:icon="@drawable/ic_loudspeaker">
-    </item>
+        android:title="@string/title_page1"
+        android:icon="@drawable/ic_loudspeaker"/>
     <item
         android:id="@+id/bnm_search"
-        android:title="პროდ.ძებნა"
-        android:icon="@drawable/ic_search_white_24dp">
-    </item>
+        android:title="@string/title_page2"
+        android:icon="@drawable/ic_search_white_24dp"/>
     <item
         android:id="@+id/bnm_add"
-        android:title="პროდ.დამატება"
-        android:icon="@drawable/ic_library_add_white_24dp">
-    </item>
+        android:title="@string/title_page3"
+        android:icon="@drawable/ic_library_add_white_24dp"/>
     <item
         android:id="@+id/bnm_mylist"
-        android:title="შერჩეული სია"
-        android:icon="@drawable/ic_itemlist_white_24dp">
-    </item>
+        android:title="@string/title_page4"
+        android:icon="@drawable/ic_itemlist_white_24dp"/>
     <item
         android:id="@+id/bnm_user"
-        android:title="მომხმარებელი"
-        android:icon="@drawable/ic_person_white_24px">
-    </item>
+        android:title="@string/title_page5"
+        android:icon="@drawable/ic_person_white_24px"/>
 
 </menu>

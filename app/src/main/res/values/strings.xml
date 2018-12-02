@@ -2,4 +2,9 @@
     <string name="app_name">MarketPrices</string>
     <string name="enter_prod_name">პროდუქტის დასახელება</string>
     <string name="product_image_description">არჩეული პროდუქტის ფოტო</string>
+    <string name="title_page1">აქციები</string>
+    <string name="title_page2">პროდ.ძებნა</string>
+    <string name="title_page3">პროდ.დამატება</string>
+    <string name="title_page4">შერჩეული სია</string>
+    <string name="title_page5">მომხმარებელი</string>
 </resources>

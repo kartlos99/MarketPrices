@@ -1,20 +1,13 @@
 package diakonidze.marketprices;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,17 +18,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
 import diakonidze.marketprices.models.Product;
@@ -47,11 +32,12 @@ public class AddActivity extends AppCompatActivity {
 
     // layout elements
     private AutoCompleteTextView inputProduct;
+    private ChipGroup chipGroup;
 
     // vars
     private Context mContext = AddActivity.this;
-    private String[] products = {"puri", "yveli", "khacho 6%", "khacho 0%", "yveli sulguni", "mdnari yveli", "shavi puri"};
-    private List<Product> productList;
+//    private String[] products = {"puri", "yveli", "khacho 6%", "khacho 0%", "yveli sulguni", "mdnari yveli", "shavi puri"};
+//    private List<Product> PRODUCT_LIST;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +46,10 @@ public class AddActivity extends AppCompatActivity {
 
         init_components();
 
-        fill_prodList();
+        if (Constants.PRODUCT_LIST != null) {
+            AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, Constants.PRODUCT_LIST);
+            inputProduct.setAdapter(productAdapter);
+        }
 
 
         inputProduct.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -76,30 +65,72 @@ public class AddActivity extends AppCompatActivity {
 
                 tViewSelectedName.setText(product.getName());
 
-                if (product.getImage().isEmpty()){
+                if (product.getImage().isEmpty()) {
                     imageView.setImageResource(R.drawable.ic_no_image);
                 } else {
                     Log.d("IMAGE", product.getImage());
                     Picasso.get()
-                            .load(Constants.HOST_URL + product.getImage())
+                            .load(Constants.HOST_URL + Constants.IMAGES_FOLDER + product.getImage())
                             .into(imageView);
+                }
+
+                int[] productPacks = product.getPacks();
+                chipGroup.removeAllViews();
+
+                for (int j = 0; j < product.getPacks().length; j++) {
+                    Chip chip = new Chip(mContext);
+
+                    for (int k = 0; k < Constants.PACKS.size(); k++){
+                        if (Constants.PACKS.get(k).getId() == productPacks[j]){
+                            chip.setText(Constants.PACKS.get(k).getValue());
+                            chip.setCheckable(true);
+                            Log.d(TAG,"ChipID: " + chip.getId());
+
+                            chipGroup.addView(chip);
+                        }
+                    }
+
+
+                }
+
+            }
+        });
+
+        chipGroup = findViewById(R.id.gr_packs);
+        Chip chip = new Chip(mContext);
+        chip.setText("added");
+        chip.setCheckable(true);
+        chipGroup.addView(chip);
+
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+
+                int id = group.getCheckedChipId();
+                if (id != -1) {
+                    Chip chip1 = (Chip) group.getChildAt(id);
+                    Log.d(TAG, "ChipID: " + chip1.getId() + " " + chip1.getText().toString());
+                }
+
+                Constants.showtext(mContext, "chekID: " + group.getCheckedChipId());
+                switch (checkedId) {
+                    case 1:
+                        Constants.showtext(mContext, "111");
+                        break;
+                    case 2:
+                        Constants.showtext(mContext, "2");
+                        break;
+                    case 3:
+                        Constants.showtext(mContext, "3");
+
+                        break;
+                    case 4:
+                        Constants.showtext(mContext, "44");
+                        break;
                 }
             }
         });
 
-        inputProduct.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-//                Log.d(TAG, adapterView.getSelectedItem().toString());
-//                Log.d(TAG, " i: " + i);
-//                Log.d(TAG, " L: " + l);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
     }
 
     private void init_components() {
@@ -141,60 +172,5 @@ public class AddActivity extends AppCompatActivity {
         inputProduct = findViewById(R.id.atv_product_name);
     }
 
-    private void fill_prodList() {
 
-        RequestQueue queue = Volley.newRequestQueue(mContext);
-
-        JsonArrayRequest productListRequest = new JsonArrayRequest(Constants.GET_PRODUCT_LINK, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                Log.d(TAG, " GET_PRODUCT_List - come : OK");
-                productList = new ArrayList<>();
-
-                for (int i = 0; i < response.length(); i++) {
-                    try {
-
-                        JSONObject item = response.getJSONObject(i);
-                        if (item != null) {
-                            Product product = new Product(item.getInt("id"), item.getString("name"));
-
-                            if (!item.isNull("p_img")) {
-                                product.setImage(item.getString("p_img"));
-                            } else if (!item.isNull("pt_img")) {
-                                product.setImage(item.getString("pt_img"));
-                            } else if (!item.isNull("pg_img")) {
-                                product.setImage(item.getString("pg_img"));
-                            } else {
-                                product.setImage("");
-                            }
-
-                            productList.add(product);
-                            Log.d(TAG, "item: " + item.toString());
-                            Log.d(TAG, "prod: " + product.allToString());
-                        }
-
-
-                    } catch (NullPointerException e) {
-                        Log.e(TAG, e.getMessage());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, productList);
-                inputProduct.setAdapter(productAdapter);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, " GET_PRODUCT_List - come : error");
-                Log.d(TAG, error.getMessage());
-
-            }
-        });
-
-
-        queue.add(productListRequest);
-
-    }
 }

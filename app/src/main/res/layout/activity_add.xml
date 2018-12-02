@@ -47,9 +47,37 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@mipmap/ic_launcher"
+                android:scaleType="centerCrop"
                 android:contentDescription="@string/product_image_description"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/gr_packs"
+                android:layout_margin="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/atv_product_name"
+                app:singleSelection="true"
+                app:singleLine="true">
+
+
+
+                <!--<com.google.android.material.chip.Chip-->
+                    <!--android:id="@+id/chip4"-->
+                    <!--style="@style/Widget.MaterialComponents.Chip.Choice"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:checkable="true"-->
+                    <!--app:checkedIconEnabled="true"-->
+                    <!--app:checkedIcon="@drawable/ic_person_white_24px"-->
+                    <!--android:checked="false"-->
+                    <!--android:text="sxva rame" />-->
+
+
+            </com.google.android.material.chip.ChipGroup>
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

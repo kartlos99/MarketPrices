@@ -12,6 +12,12 @@
         android:layout_width="@dimen/image_size_in_dropdown"
         android:layout_height="@dimen/image_size_in_dropdown" />
 
+    <ImageView
+        android:src="@drawable/soft_end_right"
+        android:layout_marginStart="-20dp"
+        android:layout_width="20dp"
+        android:layout_height="@dimen/image_size_in_dropdown" />
+
     <TextView
         android:id="@+id/tv_prod_name"
         android:paddingStart="8dp"
