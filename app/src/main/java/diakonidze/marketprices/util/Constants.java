@@ -22,9 +22,9 @@ import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
 
 public class Constants {
-    //    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
-    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
-//    public static final String HOST_URL = "http://app.inf.ge/"; // server
+//        public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+//    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
+    public static final String HOST_URL = "http://app.inf.ge/"; // server
 
     public static final String IMAGES_FOLDER = "images/"; // სამსახურში
 
@@ -75,6 +75,13 @@ public class Constants {
                                 pk[j] = ja_pk.getInt(j);
                             }
                             product.setPacks(pk);
+
+                            JSONArray ja_param = item.getJSONArray("param");
+                            int[] param = new int[ja_param.length()];
+                            for (int j = 0; j < ja_param.length(); j++){
+                                param[j] = ja_param.getInt(j);
+                            }
+                            product.setParams(param);
 
                             if (!item.isNull("p_img")) {
                                 product.setImage(item.getString("p_img"));

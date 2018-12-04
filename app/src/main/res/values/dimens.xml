@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="elevationDef">4dp</dimen>
+    <dimen name="chip_elevation">4</dimen>
     <dimen name="image_size_in_dropdown">52dp</dimen>
+    <dimen name="chips_elevation">3dp</dimen>
 </resources>

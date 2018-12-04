@@ -17,12 +17,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
+import diakonidze.marketprices.customViews.ParamInputView;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.util.Constants;
 
@@ -33,11 +38,21 @@ public class AddActivity extends AppCompatActivity {
     // layout elements
     private AutoCompleteTextView inputProduct;
     private ChipGroup chipGroup;
+    LinearLayout paramConteiner;
 
     // vars
     private Context mContext = AddActivity.this;
-//    private String[] products = {"puri", "yveli", "khacho 6%", "khacho 0%", "yveli sulguni", "mdnari yveli", "shavi puri"};
-//    private List<Product> PRODUCT_LIST;
+    private int selectedPackID = 0;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (Constants.PRODUCT_LIST != null) {
+            AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, new ArrayList<>(Constants.PRODUCT_LIST));
+            inputProduct.setAdapter(productAdapter);
+        }
+        hideKeyboard();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +60,6 @@ public class AddActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add);
 
         init_components();
-
-        if (Constants.PRODUCT_LIST != null) {
-            AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, Constants.PRODUCT_LIST);
-            inputProduct.setAdapter(productAdapter);
-        }
 
 
         inputProduct.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -80,56 +90,57 @@ public class AddActivity extends AppCompatActivity {
                 for (int j = 0; j < product.getPacks().length; j++) {
                     Chip chip = new Chip(mContext);
 
-                    for (int k = 0; k < Constants.PACKS.size(); k++){
-                        if (Constants.PACKS.get(k).getId() == productPacks[j]){
+                    for (int k = 0; k < Constants.PACKS.size(); k++) {
+                        if (Constants.PACKS.get(k).getId() == productPacks[j]) {
                             chip.setText(Constants.PACKS.get(k).getValue());
                             chip.setCheckable(true);
-                            Log.d(TAG,"ChipID: " + chip.getId());
-
+                            chip.setElevation(3.2f);
+                            chip.setTag(Constants.PACKS.get(k).getId());
+                            chip.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Chip chipx = (Chip) v;
+                                    if (chipx.isChecked()){
+                                        selectedPackID = (int) chipx.getTag();
+                                    }else {
+                                        selectedPackID = 0;
+                                    }
+                                    Boolean b = chipx.isChecked();
+                                    Log.d(TAG, "Chip_TEXT: " + chipx.getText() + " state: " + b + " : TAG: " + chipx.getTag());
+                                    hideKeyboard();
+                                }
+                            });
+                            Log.d(TAG, "ChipID: " + chip.getId());
                             chipGroup.addView(chip);
                         }
                     }
-
-
                 }
 
+                int[] params = product.getParams();
+                paramConteiner.removeAllViews();
+
+                for (int j = 0; j < params.length; j++){
+
+                    for (int k = 0; k < Constants.PARAMITERS.size(); k++){
+                        if (params[j] == Constants.PARAMITERS.get(k).getId()){
+                            ParamInputView paramInputView = new ParamInputView(mContext, Constants.PARAMITERS.get(k));
+                            paramInputView.setTag(Constants.PARAMITERS.get(k).getCode());
+                            paramInputView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                                @Override
+                                public void onFocusChange(View v, boolean hasFocus) {
+
+                                }
+                            });
+                            paramConteiner.addView(paramInputView);
+                        }
+                    }
+                }
+
+                hideKeyboard();
             }
         });
 
-        chipGroup = findViewById(R.id.gr_packs);
-        Chip chip = new Chip(mContext);
-        chip.setText("added");
-        chip.setCheckable(true);
-        chipGroup.addView(chip);
-
-        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(ChipGroup group, int checkedId) {
-
-                int id = group.getCheckedChipId();
-                if (id != -1) {
-                    Chip chip1 = (Chip) group.getChildAt(id);
-                    Log.d(TAG, "ChipID: " + chip1.getId() + " " + chip1.getText().toString());
-                }
-
-                Constants.showtext(mContext, "chekID: " + group.getCheckedChipId());
-                switch (checkedId) {
-                    case 1:
-                        Constants.showtext(mContext, "111");
-                        break;
-                    case 2:
-                        Constants.showtext(mContext, "2");
-                        break;
-                    case 3:
-                        Constants.showtext(mContext, "3");
-
-                        break;
-                    case 4:
-                        Constants.showtext(mContext, "44");
-                        break;
-                }
-            }
-        });
+        hideKeyboard();
 
     }
 
@@ -170,7 +181,13 @@ public class AddActivity extends AppCompatActivity {
         menuItem.setChecked(true);
 
         inputProduct = findViewById(R.id.atv_product_name);
+        paramConteiner = findViewById(R.id.param_conteiner);
+        chipGroup = findViewById(R.id.gr_packs);
     }
 
-
+    private void hideKeyboard() {
+//        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
+    }
 }

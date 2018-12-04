@@ -5,4 +5,5 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorBottomNavBack">#f8f5f5</color>
+    <color name="color_param_card">#93cfc9</color>
 </resources>

@@ -7,15 +7,7 @@ public class Product {
     private int id, typeID;
     private String name, typeName, groupName;
     private String image;
-
-    public int[] getPacks() {
-        return packs;
-    }
-
-    public void setPacks(int[] packs) {
-        this.packs = packs;
-    }
-
+    private int[] params;
     private int[] packs;
 
     public Product(int id, String name) {
@@ -33,6 +25,22 @@ public class Product {
                 ", groupName='" + groupName + '\'' +
                 ", image='" + image + '\'' +
                 '}';
+    }
+
+    public int[] getParams() {
+        return params;
+    }
+
+    public void setParams(int[] params) {
+        this.params = params;
+    }
+
+    public int[] getPacks() {
+        return packs;
+    }
+
+    public void setPacks(int[] packs) {
+        this.packs = packs;
     }
 
     @Override
