@@ -42,6 +42,10 @@ public class ParamInputView extends LinearLayout {
 
     }
 
+    public int getParamID(){
+        return paramiter.getId();
+    }
+
     public String getParamVal(){
         return paramValue.getText().toString();
     }

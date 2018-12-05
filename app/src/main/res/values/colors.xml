@@ -3,6 +3,8 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorBackground">#c545ff</color>
+
 
     <color name="colorBottomNavBack">#f8f5f5</color>
     <color name="color_param_card">#93cfc9</color>

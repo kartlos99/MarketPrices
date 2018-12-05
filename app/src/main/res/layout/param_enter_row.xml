@@ -7,7 +7,8 @@
     android:layout_height="match_parent">
 
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.MaterialComponents.CardView"
         android:layout_margin="6dp"
         android:backgroundTint="@color/color_param_card"
         app:cardCornerRadius="6dp"
@@ -28,12 +29,15 @@
                 android:id="@+id/tv_param_name"
                 android:text=""
                 android:layout_weight="35"
+                android:maxLines="1"
+                android:textSize="@dimen/param_text_size"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />
 
             <EditText
                 android:id="@+id/et_param_value"
                 android:text=""
+                android:maxLines="1"
                 android:textAlignment="textEnd"
                 android:paddingEnd="4dp"
                 android:inputType="numberDecimal"
@@ -44,12 +48,14 @@
             <TextView
                 android:id="@+id/tv_param_unit"
                 android:text=""
+                android:maxLines="1"
+                android:textSize="@dimen/param_text_size"
                 android:layout_weight="30"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

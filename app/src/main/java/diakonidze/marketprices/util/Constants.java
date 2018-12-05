@@ -17,16 +17,20 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import diakonidze.marketprices.models.Brand;
+import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
 
 public class Constants {
-//        public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+        public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
 //    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
-    public static final String HOST_URL = "http://app.inf.ge/"; // server
+//    public static final String HOST_URL = "http://app.inf.ge/"; // server
 
-    public static final String IMAGES_FOLDER = "images/"; // სამსახურში
+    public static final String IMAGES_FOLDER = "images/";
+    public static final String Market_Logos_FOLDER = "images/market_logos/";
+
 
     public static final String GET_PRODUCT_LINK = HOST_URL + "get_products.php";
 
@@ -37,6 +41,8 @@ public class Constants {
     public static List<Product> PRODUCT_LIST;
     public static List<Paramiter> PARAMITERS;
     public static List<Packing> PACKS;
+    public static List<Brand> BRANDS;
+    public static List<Market> MARKETS;
 
 
     public static void fill_prodList(Context mContext) {
@@ -47,17 +53,25 @@ public class Constants {
             @Override
             public void onResponse(JSONArray response) {
                 Log.d(TAG, " GET_PRODUCT_List - come : OK");
+
                 PRODUCT_LIST = new ArrayList<>();
                 PARAMITERS = new ArrayList<>();
                 PACKS = new ArrayList<>();
+                BRANDS = new ArrayList<>();
+                MARKETS = new ArrayList<>();
+
                 JSONArray jsonProducts = new JSONArray();
                 JSONArray jsonParams = new JSONArray();
                 JSONArray jsonPacking = new JSONArray();
+                JSONArray jsonBrands = new JSONArray();
+                JSONArray jsonMarkets = new JSONArray();
 
                 try {
                     jsonProducts = response.getJSONArray(0);
                     jsonParams = response.getJSONArray(1);
                     jsonPacking = response.getJSONArray(2);
+                    jsonBrands = response.getJSONArray(3);
+                    jsonMarkets = response.getJSONArray(4);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -134,6 +148,40 @@ public class Constants {
                         e.printStackTrace();
                     }
                 }
+
+                for (int i = 0; i < jsonBrands.length(); i++) {
+                    try {
+                        JSONObject item = jsonBrands.getJSONObject(i);
+                        Brand brand = new Brand(
+                                item.getInt("id"),
+                                item.getString("brandName"),
+                                item.getString("brandNameEng")
+                        );
+                        BRANDS.add(brand);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                for (int i = 0; i < jsonMarkets.length(); i++) {
+                    try {
+                        JSONObject item = jsonMarkets.getJSONObject(i);
+                        Market market = new Market(
+                                item.getInt("id"),
+                                item.getString("marketName")
+                        );
+                        market.setLogo(item.getString("logo"));
+                        market.setSn(item.getString("sn"));
+                        market.setAddress(item.getString("address"));
+                        market.setComment(item.getString("comment"));
+
+                        MARKETS.add(market);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Log.d(TAG, " MARKETs SIZE : " + MARKETS.size());
 
                 COMPLITE_INITIAL_DOWNLOADS = true;
                 long time = System.currentTimeMillis();
