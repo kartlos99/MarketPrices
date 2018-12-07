@@ -9,9 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 
 import androidx.appcompat.app.AppCompatActivity;
-import diakonidze.marketprices.customViews.ParamInputView;
-import diakonidze.marketprices.util.BottomNavigationViewHelper;
-import diakonidze.marketprices.util.Constants;
+import diakonidze.marketprices.util.GlobalConstants;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                if (Constants.COMPLITE_INITIAL_DOWNLOADS) {
+                if (GlobalConstants.COMPLITE_INITIAL_DOWNLOADS) {
                     switch (menuItem.getItemId()) {
                         case R.id.bnm_promotion:
 
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     overridePendingTransition(0, 0);
                 } else {
-                    Constants.showtext(mContext, "weit for inialization");
+                    GlobalConstants.showtext(mContext, "weit for inialization");
                 }
 
                 //Sibling transitions
@@ -82,11 +80,11 @@ public class MainActivity extends AppCompatActivity {
         MenuItem menuItem = bottomMenu.getItem(0);
         menuItem.setChecked(true);
 
-        if (!Constants.COMPLITE_INITIAL_DOWNLOADS) {
+        if (!GlobalConstants.COMPLITE_INITIAL_DOWNLOADS) {
             long time= System.currentTimeMillis();
             Log.d(TAG, " Time value in millisecinds "+time);
 
-            Constants.fill_prodList(mContext);
+            GlobalConstants.fill_prodList(mContext);
         }
     }
 

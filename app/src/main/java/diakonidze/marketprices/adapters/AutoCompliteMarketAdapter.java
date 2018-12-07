@@ -1,7 +1,6 @@
 package diakonidze.marketprices.adapters;
 
 import android.content.Context;
-import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Market;
-import diakonidze.marketprices.util.Constants;
+import diakonidze.marketprices.util.GlobalConstants;
 
 public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
 
@@ -59,7 +58,7 @@ public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
             } else {
                 Log.d("IMAGE", market.getLogo());
                 Picasso.get()
-                        .load(Constants.HOST_URL + Constants.Market_Logos_FOLDER + market.getLogo())
+                        .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
                         .into(imageView);
             }
         }
@@ -79,10 +78,21 @@ public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
                 suggestion.addAll(fullMarketList);
             } else {
                 String filterPatern = typedtext.toString().trim();
+                String sArray[] = filterPatern.split(" ");
+
+
                 for (Market item : fullMarketList){
-                    if (item.getMarketName().contains(filterPatern)){
+                    String nameAndAddress = item.getMarketName() +" "+ item.getAddress();
+                    boolean exist = true;
+                    for (String fp : sArray){
+                        if (!nameAndAddress.contains(fp)){
+                            exist = false;
+                        }
+                    }
+                    if (exist){
                         suggestion.add(item);
                     }
+
                 }
             }
 

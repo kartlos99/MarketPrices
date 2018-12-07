@@ -1,6 +1,5 @@
 package diakonidze.marketprices.customViews;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +7,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import diakonidze.marketprices.AddActivity;
-import diakonidze.marketprices.MainActivity;
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Paramiter;
-import diakonidze.marketprices.util.Constants;
 
 public class ParamInputView extends LinearLayout {
 
@@ -47,6 +43,9 @@ public class ParamInputView extends LinearLayout {
     }
 
     public String getParamVal(){
+        if (paramValue.getText().toString().isEmpty()){
+            return "0";
+        }
         return paramValue.getText().toString();
     }
 

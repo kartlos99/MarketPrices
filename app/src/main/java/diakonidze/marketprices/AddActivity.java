@@ -5,6 +5,12 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
+//import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -14,10 +20,8 @@ import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,16 +34,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
 import diakonidze.marketprices.customViews.ParamInputView;
-import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
-import diakonidze.marketprices.util.Constants;
+import diakonidze.marketprices.util.GlobalConstants;
 
 public class AddActivity extends AppCompatActivity {
 
@@ -52,6 +58,9 @@ public class AddActivity extends AppCompatActivity {
     private ChipGroup chipGroup;
     private LinearLayout paramConteiner;
     private FloatingActionButton btnDone;
+    private TextInputEditText etPrice;
+    private TextInputEditText etMessage;
+
 
     // vars
     private Context mContext = AddActivity.this;
@@ -62,12 +71,12 @@ public class AddActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Constants.PRODUCT_LIST != null) {
-            AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, new ArrayList<>(Constants.PRODUCT_LIST));
+        if (GlobalConstants.PRODUCT_LIST != null) {
+            AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, new ArrayList<>(GlobalConstants.PRODUCT_LIST));
             inputProduct.setAdapter(productAdapter);
         }
-        if (Constants.MARKETS != null){
-            AutoCompliteMarketAdapter marketAdapter = new AutoCompliteMarketAdapter(mContext, new ArrayList<Market>(Constants.MARKETS));
+        if (GlobalConstants.MARKETS != null){
+            AutoCompliteMarketAdapter marketAdapter = new AutoCompliteMarketAdapter(mContext, new ArrayList<Market>(GlobalConstants.MARKETS));
             inputMarket.setAdapter(marketAdapter);
         }
         hideKeyboard();
@@ -83,10 +92,6 @@ public class AddActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add);
-
-        getWindow().setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
-        );
 
         init_components();
         if (savedInstanceState != null) {
@@ -118,7 +123,7 @@ public class AddActivity extends AppCompatActivity {
                 } else {
                     Log.d("IMAGE", product.getImage());
                     Picasso.get()
-                            .load(Constants.HOST_URL + Constants.IMAGES_FOLDER + product.getImage())
+                            .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
                             .into(imageView);
                 }
 
@@ -128,12 +133,12 @@ public class AddActivity extends AppCompatActivity {
                 for (int j = 0; j < product.getPacks().length; j++) {
                     Chip chip = new Chip(mContext);
 
-                    for (int k = 0; k < Constants.PACKS.size(); k++) {
-                        if (Constants.PACKS.get(k).getId() == productPacks[j]) {
-                            chip.setText(Constants.PACKS.get(k).getValue());
+                    for (int k = 0; k < GlobalConstants.PACKS.size(); k++) {
+                        if (GlobalConstants.PACKS.get(k).getId() == productPacks[j]) {
+                            chip.setText(GlobalConstants.PACKS.get(k).getValue());
                             chip.setCheckable(true);
                             chip.setElevation(3.2f);
-                            chip.setTag(Constants.PACKS.get(k).getId());
+                            chip.setTag(GlobalConstants.PACKS.get(k).getId());
                             chip.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -159,10 +164,10 @@ public class AddActivity extends AppCompatActivity {
 
                 for (int j = 0; j < params.length; j++) {
 
-                    for (int k = 0; k < Constants.PARAMITERS.size(); k++) {
-                        if (params[j] == Constants.PARAMITERS.get(k).getId()) {
-                            ParamInputView paramInputView = new ParamInputView(mContext, Constants.PARAMITERS.get(k));
-                            paramInputView.setTag(Constants.PARAMITERS.get(k).getCode());
+                    for (int k = 0; k < GlobalConstants.PARAMITERS.size(); k++) {
+                        if (params[j] == GlobalConstants.PARAMITERS.get(k).getId()) {
+                            ParamInputView paramInputView = new ParamInputView(mContext, GlobalConstants.PARAMITERS.get(k));
+                            paramInputView.setTag(GlobalConstants.PARAMITERS.get(k).getCode());
 
                             paramConteiner.addView(paramInputView);
                         }
@@ -189,16 +194,16 @@ public class AddActivity extends AppCompatActivity {
                 } else {
                     Log.d("IMAGE", market.getLogo());
                     Picasso.get()
-                            .load(Constants.HOST_URL + Constants.Market_Logos_FOLDER + market.getLogo())
+                            .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
                             .into(imageView);
 
                 }
             }
         });
 
-        String[] br = new String[Constants.BRANDS.size()];
-        for (int i = 0; i < Constants.BRANDS.size(); i++) {
-            br[i] = Constants.BRANDS.get(i).getBrandName();
+        String[] br = new String[GlobalConstants.BRANDS.size()];
+        for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
+            br[i] = GlobalConstants.BRANDS.get(i).getBrandName();
         }
 
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(mContext, android.R.layout.select_dialog_item, br);
@@ -208,16 +213,54 @@ public class AddActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 hideKeyboard();
-                for (int i = 0; i < Constants.BRANDS.size(); i++) {
-                    if (Constants.BRANDS.get(i).getBrandName().equals(inputBrand.getAdapter().getItem(position).toString())) {
-                        selectedBrandID = Constants.BRANDS.get(i).getId();
+                for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
+                    if (GlobalConstants.BRANDS.get(i).getBrandName().equals(inputBrand.getAdapter().getItem(position).toString())) {
+                        selectedBrandID = GlobalConstants.BRANDS.get(i).getId();
                     }
                 }
 
             }
         });
 
+        btnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newRealProduct.setPackingID(selectedPackID);
+                newRealProduct.setBrandID(selectedBrandID);
+                if (etPrice.getText().toString().isEmpty()){
+                    etPrice.setText("0");
+                }
+                String price = etPrice.getText().toString();
+                newRealProduct.setPrice(Float.valueOf(price));
+                newRealProduct.setComment(etMessage.getText().toString());
+
+                if (newRealProduct.getParamIDs() != null) {
+                    String[] paramVal = new String[newRealProduct.getParamIDs().length];
+
+                    for (int i = 0; i < paramConteiner.getChildCount(); i++) {
+                        ParamInputView paramInputView = (ParamInputView) paramConteiner.getChildAt(i);
+                        if (paramInputView != null) {
+                            paramVal[i] = paramInputView.getParamVal();
+                            newRealProduct.getParamIDs()[i] = paramInputView.getParamID();
+                        } else {
+                            paramVal[i] = "0";
+                            newRealProduct.getParamIDs()[i] = 0;
+                        }
+                    }
+                    newRealProduct.setParamValues(paramVal);
+                }
+
+                Log.d(TAG, " RealPR: " + newRealProduct.toString());
+                GlobalConstants.insertNewRealProduct(mContext, newRealProduct, AddActivity.this);
+            }
+        });
+
         hideKeyboard();
+    }
+
+    public TextView getbtn(){
+        TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
+        return tViewSelectedName;
     }
 
     private void init_components() {
@@ -256,8 +299,8 @@ public class AddActivity extends AppCompatActivity {
         MenuItem menuItem = bottomMenu.getItem(2);
         menuItem.setChecked(true);
 
-        final TextInputEditText etPrice = findViewById(R.id.et_price);
-        final TextInputEditText etMessage = findViewById(R.id.et_message);
+        etPrice = findViewById(R.id.et_price);
+        etMessage = findViewById(R.id.et_message);
 
         inputProduct = findViewById(R.id.atv_product_name);
         inputBrand = findViewById(R.id.atv_brand_name);
@@ -265,36 +308,12 @@ public class AddActivity extends AppCompatActivity {
         paramConteiner = findViewById(R.id.param_conteiner);
         chipGroup = findViewById(R.id.gr_packs);
         btnDone = findViewById(R.id.btn_add_real_product);
-        btnDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                newRealProduct.setPackingID(selectedPackID);
-                newRealProduct.setBrandID(selectedBrandID);
-                newRealProduct.setPrice(Float.valueOf(etPrice.getText().toString()));
-                newRealProduct.setComment(etMessage.getText().toString());
 
-                String[] paramVal = new String[newRealProduct.getParamIDs().length];
-
-                for (int i=0; i < paramConteiner.getChildCount(); i++){
-                    ParamInputView paramInputView = (ParamInputView) paramConteiner.getChildAt(i);
-                    if (paramInputView != null) {
-                        paramVal[i] = paramInputView.getParamVal();
-                        newRealProduct.getParamIDs()[i] = paramInputView.getParamID();
-                    }else {
-                        paramVal[i] = "0";
-                        newRealProduct.getParamIDs()[i] = 0;
-                    }
-                }
-                newRealProduct.setParamValues(paramVal);
-
-                Log.d(TAG, " RealPR: " + newRealProduct.toString());
-            }
-        });
     }
 
     private void hideKeyboard() {
-//        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+//        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+//        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
     }
 }

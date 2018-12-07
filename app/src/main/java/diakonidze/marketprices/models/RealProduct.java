@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class RealProduct implements Serializable {
-    int id, productID, brandID, marketID, packingID, countryID;
-    String prAddDate, comment;
-    Float price;
+    private int id, productID, brandID, marketID, packingID, countryID;
+    private String prAddDate, comment;
+    private Float price;
     private int[] paramIDs;
     private String[] paramValues;
 

@@ -1,38 +1,51 @@
 package diakonidze.marketprices.util;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import diakonidze.marketprices.AddActivity;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.RealProduct;
 
-public class Constants {
-        public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+public class GlobalConstants {
+    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
 //    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
 //    public static final String HOST_URL = "http://app.inf.ge/"; // server
 
     public static final String IMAGES_FOLDER = "images/";
-    public static final String Market_Logos_FOLDER = "images/market_logos/";
+    public static final String MARKET_LOGOS_FOLDER = "images/market_logos/";
 
 
     public static final String GET_PRODUCT_LINK = HOST_URL + "get_products.php";
+    public static final String INS_REAL_PROD = HOST_URL + "ins_real_prod.php";
 
     public static Boolean COMPLITE_INITIAL_DOWNLOADS = false;
     public static String TAG = "class_Constants";
@@ -44,12 +57,59 @@ public class Constants {
     public static List<Brand> BRANDS;
     public static List<Market> MARKETS;
 
+    public static void insertNewRealProduct(final Context mContext, RealProduct realProduct, final AddActivity activity) {
+
+        RequestQueue queue = Volley.newRequestQueue(mContext);
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+        params.put("prod_id", String.valueOf(realProduct.getProductID()));
+        params.put("market_id", String.valueOf(realProduct.getMarketID()));
+        params.put("price", String.valueOf(realProduct.getPrice()));
+        params.put("brand_id", String.valueOf(realProduct.getBrandID()));
+        params.put("packing_id", String.valueOf(realProduct.getPackingID()));
+        params.put("comment", realProduct.getComment());
+        for (int i= 0; i<realProduct.getParamIDs().length; i++){
+            params.put("paramIDs["+i+"]", String.valueOf(realProduct.getParamIDs()[i]));
+            params.put("paramValues["+i+"]", realProduct.getParamValues()[i]);
+        }
+//        params.put("paramIDs", Arrays.toString(realProduct.getParamIDs()));
+//        params.put("paramValues", Arrays.toString(realProduct.getParamValues()));
+
+
+        StringRequest request = new StringRequest(Request.Method.POST, GlobalConstants.INS_REAL_PROD + "?ert=asdf", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d("resp_INS_PR:", response);
+                if (response.equals("0")){
+                    showtext(mContext, "ჩაწერა ვერ მოხერხდა, server Error");
+                    activity.getbtn().setText("Caiwera!!!");
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("ERR:", error.getMessage());
+                showtext(mContext, "ჩაწერა ვერ მოხერხდა, connection Error");
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+                return params;
+            }
+
+        };
+
+        Log.d("INS Real Prod Params", params.toString());
+        queue.add(request);
+
+    }
 
     public static void fill_prodList(Context mContext) {
 
         RequestQueue queue = Volley.newRequestQueue(mContext);
 
-        JsonArrayRequest productListRequest = new JsonArrayRequest(Constants.GET_PRODUCT_LINK, new Response.Listener<JSONArray>() {
+        JsonArrayRequest productListRequest = new JsonArrayRequest(GlobalConstants.GET_PRODUCT_LINK, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 Log.d(TAG, " GET_PRODUCT_List - come : OK");
@@ -85,14 +145,14 @@ public class Constants {
 
                             JSONArray ja_pk = item.getJSONArray("packs");
                             int[] pk = new int[ja_pk.length()];
-                            for (int j = 0; j < ja_pk.length(); j++){
+                            for (int j = 0; j < ja_pk.length(); j++) {
                                 pk[j] = ja_pk.getInt(j);
                             }
                             product.setPacks(pk);
 
                             JSONArray ja_param = item.getJSONArray("param");
                             int[] param = new int[ja_param.length()];
-                            for (int j = 0; j < ja_param.length(); j++){
+                            for (int j = 0; j < ja_param.length(); j++) {
                                 param[j] = ja_param.getInt(j);
                             }
                             product.setParams(param);

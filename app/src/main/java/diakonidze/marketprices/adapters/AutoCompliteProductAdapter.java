@@ -20,7 +20,7 @@ import java.util.List;
 
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Product;
-import diakonidze.marketprices.util.Constants;
+import diakonidze.marketprices.util.GlobalConstants;
 
 public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
 
@@ -57,7 +57,7 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
             } else {
                 Log.d("IMAGE", product.getImage());
                 Picasso.get()
-                        .load(Constants.HOST_URL + Constants.IMAGES_FOLDER + product.getImage())
+                        .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
                         .into(imageView);
             }
         }
