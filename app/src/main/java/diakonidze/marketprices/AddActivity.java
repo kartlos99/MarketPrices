@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +38,7 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.invoke.ConstantCallSite;
 import java.util.ArrayList;
 
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
@@ -46,8 +48,9 @@ import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
+import diakonidze.marketprices.util.NetService;
 
-public class AddActivity extends AppCompatActivity {
+public class AddActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
     private static final String TAG = "AddActivity";
 
@@ -190,7 +193,7 @@ public class AddActivity extends AppCompatActivity {
                 ImageView imageView = findViewById(R.id.img_market_logo);
 
                 if (market.getLogo().isEmpty()) {
-                    imageView.setImageResource(R.drawable.market);
+                    imageView.setImageResource(R.drawable.ic_no_image);
                 } else {
                     Log.d("IMAGE", market.getLogo());
                     Picasso.get()
@@ -251,7 +254,9 @@ public class AddActivity extends AppCompatActivity {
                 }
 
                 Log.d(TAG, " RealPR: " + newRealProduct.toString());
-                GlobalConstants.insertNewRealProduct(mContext, newRealProduct, AddActivity.this);
+                NetService ns = new NetService(mContext);
+                ns.setCompliteListener(AddActivity.this);
+                ns.insertNewRealProduct(newRealProduct);
             }
         });
 
@@ -312,8 +317,18 @@ public class AddActivity extends AppCompatActivity {
     }
 
     private void hideKeyboard() {
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-//        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-//        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
+//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onComplite() {
+        btnDone.setBackgroundColor(Color.RED);
+        btnDone.setBackgroundResource(R.drawable.ic_no_image);
+        etPrice.setText("0");
+        etMessage.setText("");
+        GlobalConstants.showtext(mContext, "ჩაწერილია!");
+        Log.d(TAG, "OnComplite shemovida");
     }
 }

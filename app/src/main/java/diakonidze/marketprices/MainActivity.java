@@ -10,6 +10,7 @@ import com.google.android.material.chip.Chip;
 
 import androidx.appcompat.app.AppCompatActivity;
 import diakonidze.marketprices.util.GlobalConstants;
+import diakonidze.marketprices.util.NetService;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -84,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
             long time= System.currentTimeMillis();
             Log.d(TAG, " Time value in millisecinds "+time);
 
-            GlobalConstants.fill_prodList(mContext);
+            NetService ns = new NetService(mContext);
+            ns.fill_prodList();
         }
     }
 
