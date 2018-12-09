@@ -46,6 +46,7 @@ public class GlobalConstants {
 
     public static final String GET_PRODUCT_LINK = HOST_URL + "get_products.php";
     public static final String INS_REAL_PROD = HOST_URL + "ins_real_prod.php";
+    public static final String GET_SEARCH_RESULT = HOST_URL + "get_search_result.php";
 
     public static Boolean COMPLITE_INITIAL_DOWNLOADS = false;
 
@@ -55,7 +56,9 @@ public class GlobalConstants {
     public static List<Packing> PACKS;
     public static List<Brand> BRANDS;
     public static List<Market> MARKETS;
+    public static List<RealProduct> SEARCH_RESULT_LIST;
 
+    public static HashMap<String, Paramiter> PARAMIERS_HASH;
 
     public static void showtext(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();

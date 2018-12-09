@@ -8,4 +8,6 @@
 
     <color name="colorBottomNavBack">#f8f5f5</color>
     <color name="color_param_card">#93cfc9</color>
+    <color name="medium_green">#81dcab</color>
+    <color name="dark_green">#489169</color>
 </resources>

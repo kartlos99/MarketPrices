@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import diakonidze.marketprices.AddActivity;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
@@ -29,13 +28,86 @@ import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 
 public class NetService {
-    Context netContext;
-    RequestQueue queue;
-    public static String TAG = "class_NetService";
+    private Context netContext;
+    private RequestQueue queue;
+    private static String TAG = "class_NetService";
 
     public NetService(Context netContext) {
         this.netContext = netContext;
         queue = Volley.newRequestQueue(netContext);
+    }
+
+    public void getSearchedProducts(String query) {
+        JsonArrayRequest prodSearchRequest = new JsonArrayRequest(GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query
+                , new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
+                Log.d(TAG, "resp_size = " + response.length());
+                for (int i = 0; i < response.length(); i++) {
+                    RealProduct realProduct = new RealProduct();
+                    JSONObject jsonProduct = null;
+                    try {
+                        jsonProduct = response.getJSONObject(i);
+
+                        realProduct.setId(jsonProduct.getInt("id"));
+                        realProduct.setProductID(jsonProduct.getInt("productID"));
+                        realProduct.setMarketID(jsonProduct.getInt("marketID"));
+                        realProduct.setPrice(Float.valueOf(jsonProduct.getString("price")));
+                        realProduct.setBrandID(jsonProduct.getInt("brandID"));
+                        realProduct.setPackingID(jsonProduct.getInt("packingID"));
+                        realProduct.setComment(jsonProduct.getString("comment"));
+                        realProduct.setPrAddDate(jsonProduct.getString("createDate").split(" ")[0]);
+                        realProduct.setProduct_name(jsonProduct.getString("product_name"));
+                        realProduct.setMarketName(jsonProduct.getString("marketName"));
+                        realProduct.setBrandName(jsonProduct.getString("brandName"));
+                        realProduct.setPacking(jsonProduct.getString("packing"));
+
+                        JSONArray ja_paramIDs = jsonProduct.getJSONArray("paramIDs");
+                        JSONArray ja_paramVal = jsonProduct.getJSONArray("pVal");
+                        JSONArray ja_paramName = jsonProduct.getJSONArray("pName");
+                        int[] param = new int[ja_paramIDs.length()];
+                        String[] paramVal = new String[ja_paramIDs.length()];
+                        String[] paramName = new String[ja_paramIDs.length()];
+
+                        for (int j = 0; j < ja_paramIDs.length(); j++) {
+                            param[j] = ja_paramIDs.getInt(j);
+                            paramVal[j] = ja_paramVal.getString(j);
+                            paramName[j] = ja_paramName.getString(j);
+                        }
+                        realProduct.setParamIDs(param);
+                        realProduct.setParamValues(paramVal);
+                        realProduct.setParamNames(paramName);
+
+                        if (!jsonProduct.isNull("image")) {
+                            realProduct.setImage(jsonProduct.getString("image"));
+                        } else if (!jsonProduct.isNull("p_image")) {
+                            realProduct.setImage(jsonProduct.getString("p_image"));
+                        } else {
+                            realProduct.setImage("");
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d(TAG, realProduct.toString());
+                    GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
+                }
+
+                Log.d(TAG, "SRS = " + GlobalConstants.SEARCH_RESULT_LIST.size());
+                compliteListener.onComplite();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, " GET_Searched_List - come : error");
+                Log.d(TAG, error.getStackTrace().toString());
+            }
+        });
+
+        queue.add(prodSearchRequest);
+
     }
 
     // *****************************  tavdapirveli monacemebis wamogeba  **************************
@@ -112,7 +184,7 @@ public class NetService {
                     }
                 }
 
-
+                GlobalConstants.PARAMIERS_HASH = new HashMap<>();
                 for (int i = 0; i < jsonParams.length(); i++) {
                     try {
                         JSONObject item = jsonParams.getJSONObject(i);
@@ -122,6 +194,7 @@ public class NetService {
                                 , item.getString("measureUnit")
                         );
                         GlobalConstants.PARAMITERS.add(paramiter);
+                        GlobalConstants.PARAMIERS_HASH.put(item.getString("id"), paramiter);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -183,8 +256,7 @@ public class NetService {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d(TAG, " GET_PRODUCT_List - come : error");
-                Log.d(TAG, error.getLocalizedMessage());
-
+                Log.d(TAG, error.getStackTrace().toString());
             }
         });
 

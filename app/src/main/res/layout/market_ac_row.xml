@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:padding="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="60dp">
+
+    <ImageView
+        android:id="@+id/img_prod_in_list"
+        android:src="@drawable/ic_no_image"
+        android:scaleType="centerCrop"
+        android:layout_width="@dimen/image_size_in_dropdown"
+        android:layout_height="@dimen/image_size_in_dropdown"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:src="@drawable/soft_end_right"
+        app:layout_constraintTop_toTopOf="@id/img_prod_in_list"
+        app:layout_constraintEnd_toEndOf="@id/img_prod_in_list"
+        android:layout_width="10dp"
+        android:layout_height="@dimen/image_size_in_dropdown" />
+
+    <TextView
+        android:id="@+id/tv_market_name"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toEndOf="@id/img_prod_in_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:text="test"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_market_address"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@id/img_prod_in_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_market_name"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:text="test"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

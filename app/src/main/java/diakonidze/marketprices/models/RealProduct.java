@@ -5,10 +5,11 @@ import java.util.Arrays;
 
 public class RealProduct implements Serializable {
     private int id, productID, brandID, marketID, packingID, countryID;
-    private String prAddDate, comment;
+    private String prAddDate, comment, product_name, marketName, brandName, packing, image ;
     private Float price;
     private int[] paramIDs;
-    private String[] paramValues;
+    private String[] paramValues, paramNames;
+    private Boolean isInMyList = false;
 
     public RealProduct() {
     }
@@ -24,10 +25,71 @@ public class RealProduct implements Serializable {
                 ", countryID=" + countryID +
                 ", prAddDate='" + prAddDate + '\'' +
                 ", comment='" + comment + '\'' +
+                ", product_name='" + product_name + '\'' +
+                ", marketName='" + marketName + '\'' +
+                ", brandName='" + brandName + '\'' +
+                ", packing='" + packing + '\'' +
+                ", image='" + image + '\'' +
                 ", price=" + price +
                 ", paramIDs=" + Arrays.toString(paramIDs) +
                 ", paramValues=" + Arrays.toString(paramValues) +
                 '}';
+    }
+
+    public String[] getParamNames() {
+        return paramNames;
+    }
+
+    public void setParamNames(String[] paramNames) {
+        this.paramNames = paramNames;
+    }
+
+    public Boolean getInMyList() {
+        return isInMyList;
+    }
+
+    public void setInMyList(Boolean inMyList) {
+        isInMyList = inMyList;
+    }
+
+    public String getProduct_name() {
+        return product_name;
+    }
+
+    public void setProduct_name(String product_name) {
+        this.product_name = product_name;
+    }
+
+    public String getMarketName() {
+        return marketName;
+    }
+
+    public void setMarketName(String marketName) {
+        this.marketName = marketName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getPacking() {
+        return packing;
+    }
+
+    public void setPacking(String packing) {
+        this.packing = packing;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public int[] getParamIDs() {

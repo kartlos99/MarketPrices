@@ -6,4 +6,5 @@
     <dimen name="chips_elevation">3dp</dimen>
     <dimen name="param_text_size">16sp</dimen>
     <dimen name="field_icon_size">40dp</dimen>
+    <dimen name="mini_icon_size">24dp</dimen>
 </resources>

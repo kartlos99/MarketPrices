@@ -7,6 +7,9 @@ public class Market {
 
     @Override
     public String toString() {
+        if (address != null && !address.isEmpty()){
+            return marketName + ", " + address;
+        }
         return marketName;
     }
 

@@ -263,11 +263,6 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         hideKeyboard();
     }
 
-    public TextView getbtn(){
-        TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
-        return tViewSelectedName;
-    }
-
     private void init_components() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -317,18 +312,27 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     }
 
     private void hideKeyboard() {
-//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+//        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+//        inputMethodManager.hideSoftInputFromWindow(inputProduct.getWindowToken(), 0);
     }
 
     @Override
     public void onComplite() {
-        btnDone.setBackgroundColor(Color.RED);
-        btnDone.setBackgroundResource(R.drawable.ic_no_image);
-        etPrice.setText("0");
-        etMessage.setText("");
         GlobalConstants.showtext(mContext, "ჩაწერილია!");
         Log.d(TAG, "OnComplite shemovida");
+        formReset();
+    }
+
+    private void formReset(){
+        etPrice.setText("0");
+        etMessage.setText("");
+        paramConteiner.removeAllViews();
+        chipGroup.removeAllViews();
+        inputProduct.setText("");
+        inputBrand.setText("");
+        inputMarket.setText("");
+        ImageView imageView = findViewById(R.id.img_market_logo);
+        imageView.setImageResource(R.drawable.market);
     }
 }

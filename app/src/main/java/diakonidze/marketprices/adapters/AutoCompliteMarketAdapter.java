@@ -43,15 +43,17 @@ public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
         if (convertView == null){
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.product_ac_row, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.market_ac_row, parent, false);
         }
 
-        TextView textViewName = convertView.findViewById(R.id.tv_prod_name);
+        TextView textViewMname = convertView.findViewById(R.id.tv_market_name);
+        TextView textViewMaddress = convertView.findViewById(R.id.tv_market_address);
         imageView = convertView.findViewById(R.id.img_prod_in_list);
 
         Market market = getItem(position);
         if (market != null){
-            textViewName.setText(market.getMarketName());
+            textViewMname.setText(market.getMarketName());
+            textViewMaddress.setText(market.getAddress());
 
             if (market.getLogo().isEmpty()){
                 imageView.setImageResource(R.drawable.ic_no_image);

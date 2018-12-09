@@ -13,4 +13,5 @@
     <string name="address">მისამართი</string>
     <string name="comment">კომენტარი</string>
     <string name="market">მაღაზია</string>
+    <string name="additional_filter">დამატებითი ფილტრი</string>
 </resources>
