@@ -14,4 +14,5 @@
     <string name="comment">კომენტარი</string>
     <string name="market">მაღაზია</string>
     <string name="additional_filter">დამატებითი ფილტრი</string>
+    <string name="new_price">ახალი ფასი</string>
 </resources>

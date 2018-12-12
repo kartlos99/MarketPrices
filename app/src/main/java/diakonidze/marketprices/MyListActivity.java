@@ -5,18 +5,46 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
+import diakonidze.marketprices.customViews.MyListItemView;
+import diakonidze.marketprices.models.RealProduct;
+import diakonidze.marketprices.util.GlobalConstants;
+
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 
 public class MyListActivity extends AppCompatActivity {
 
     Context mContext = MyListActivity .this;
+    private static final String TAG = "My_List_Activity";
+
+    // wigdets
+    private LinearLayout uncheckedConteiner, checkedConteiner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_list);
+
+        init_components();
+
+        Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
+        for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++){
+            MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
+            uncheckedConteiner.addView(itemView);
+        }
+
+
+    }
+
+    private void init_components() {
+
+
+        uncheckedConteiner = findViewById(R.id.unchecked_item_conteiner);
+        checkedConteiner = findViewById(R.id.checked_item_conteiner);
+
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

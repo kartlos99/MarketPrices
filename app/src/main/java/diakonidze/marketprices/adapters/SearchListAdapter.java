@@ -1,6 +1,7 @@
 package diakonidze.marketprices.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import diakonidze.marketprices.util.GlobalConstants;
 public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.ViewHolder> {
 
     private Context context;
+    private static final String TAG = "Search_List_Adapter";
     private List<RealProduct> productList;
 
     public SearchListAdapter(Context context, List<RealProduct> productList) {
@@ -39,6 +41,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
         final RealProduct product = productList.get(position);
+        Log.d(TAG, "curr_Prod_in_list: "+product.toString());
 
         holder.tv_Pname.setText(product.getProduct_name());
         String paramFull = "";
@@ -56,7 +59,9 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
         holder.tv_lastdate.setText(product.getPrAddDate());
         holder.tv_Pprice.setText(String.valueOf(product.getPrice()));
 
-        if (!product.getImage().isEmpty()) {
+        if (product.getImage().isEmpty()) {
+            holder.img_product.setImageResource(R.drawable.ic_no_image);
+        }else {
             Picasso.get()
                     .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
                     .into(holder.img_product);
@@ -66,21 +71,35 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             @Override
             public void onClick(View view) {
                 product.setInMyList(!product.getInMyList());
-                changeBtnImgIcon(holder, product.getInMyList());
+                changeMyList(product);
+                setInMyListIndicatorIcon(holder, product);
             }
         });
 
-        changeBtnImgIcon(holder, product.getInMyList());
+        setInMyListIndicatorIcon(holder, product);
     }
 
-    private void changeBtnImgIcon(ViewHolder viewHolder, Boolean inList) {
-        if (inList) {
+    private void changeMyList(RealProduct realProduct){
+        if (realProduct.getInMyList()) {
+            GlobalConstants.MY_SHOPING_LIST.add(realProduct);
+        }else {
+            for (int i=0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++){
+                if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(i).getId()){
+                    GlobalConstants.MY_SHOPING_LIST.remove(i);
+                }
+            }
+        }
+    }
+
+    private void setInMyListIndicatorIcon(ViewHolder viewHolder, RealProduct realProduct) {
+        if (realProduct.getInMyList()) {
             viewHolder.img_addBtn.setImageResource(R.drawable.ic_check_black_24dp);
             viewHolder.img_addBtn.setBackgroundResource(R.drawable.green_circle);
         } else {
             viewHolder.img_addBtn.setImageResource(R.drawable.ic_add_black_24dp);
             viewHolder.img_addBtn.setBackgroundResource(R.drawable.white_circle_green_stroke);
         }
+        Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
     }
 
     @Override
@@ -102,17 +121,6 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             img_product = itemView.findViewById(R.id.img_real_prod);
             img_addBtn = itemView.findViewById(R.id.img_add_btn);
 
-            img_addBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    RealProduct realProduct = productList.get(getAdapterPosition());
-                    if (realProduct.getInMyList()) {
-                        img_addBtn.setImageResource(R.drawable.ic_check_black_24dp);
-                    } else {
-                        img_addBtn.setImageResource(R.drawable.ic_add_black_24dp);
-                    }
-                }
-            });
         }
     }
 }

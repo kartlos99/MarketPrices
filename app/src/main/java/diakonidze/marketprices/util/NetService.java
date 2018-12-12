@@ -91,6 +91,13 @@ public class NetService {
                         e.printStackTrace();
                     }
 
+                    for (int ii = 0; ii < GlobalConstants.MY_SHOPING_LIST.size(); ii++){
+                        if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(ii).getId()){
+                            realProduct.setInMyList(true);
+                            break;
+                        }
+                    }
+
                     Log.d(TAG, realProduct.toString());
                     GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
                 }
