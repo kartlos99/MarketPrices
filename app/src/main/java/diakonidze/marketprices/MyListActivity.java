@@ -17,11 +17,17 @@ import android.widget.LinearLayout;
 
 public class MyListActivity extends AppCompatActivity {
 
-    Context mContext = MyListActivity .this;
+    private Context mContext = MyListActivity .this;
     private static final String TAG = "My_List_Activity";
 
     // wigdets
     private LinearLayout uncheckedConteiner, checkedConteiner;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("key", 1);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +36,19 @@ public class MyListActivity extends AppCompatActivity {
 
         init_components();
 
-        Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
-        for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++){
-            MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
-            uncheckedConteiner.addView(itemView);
-        }
+//        if (savedInstanceState == null) {
+            Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
+            for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
+                if (GlobalConstants.MY_SHOPING_LIST.get(i).getChecked()){
+                    MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), true, uncheckedConteiner, checkedConteiner);
+                    checkedConteiner.addView(itemView);
+                }else {
+                    MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
+                    uncheckedConteiner.addView(itemView);
+                }
+            }
+//        }
+
 
 
     }

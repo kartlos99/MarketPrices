@@ -10,6 +10,7 @@ public class RealProduct implements Serializable {
     private int[] paramIDs;
     private String[] paramValues, paramNames;
     private Boolean isInMyList = false;
+    private Boolean checked = false;
 
     public RealProduct() {
     }
@@ -33,7 +34,18 @@ public class RealProduct implements Serializable {
                 ", price=" + price +
                 ", paramIDs=" + Arrays.toString(paramIDs) +
                 ", paramValues=" + Arrays.toString(paramValues) +
+                ", paramNames=" + Arrays.toString(paramNames) +
+                ", isInMyList=" + isInMyList +
+                ", checked=" + checked +
                 '}';
+    }
+
+    public Boolean getChecked() {
+        return checked;
+    }
+
+    public void setChecked(Boolean checked) {
+        this.checked = checked;
     }
 
     public String[] getParamNames() {

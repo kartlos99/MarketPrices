@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/row_parent_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-
     android:elevation="4dp"
     >
 
@@ -53,57 +53,59 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/tv_lari_sign"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:text="@string/price"
-        app:layout_constraintEnd_toStartOf="@+id/tv_prod_price"
-        app:layout_constraintTop_toTopOf="@+id/tv_prod_price" />
+        android:layout_marginTop="8dp"
+        android:textColor="@color/dark_green"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="₾"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_magazia"/>
 
     <TextView
         android:id="@+id/tv_prod_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:drawableEnd="@drawable/ic_person_white_24px"
-        android:drawableTint="@color/colorAccent"
+        android:layout_marginEnd="2dp"
         android:text="4.35"
-        android:layout_marginTop="8dp"
         android:textColor="@color/dark_green"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/imageView5"
-        app:layout_constraintTop_toTopOf="@+id/til_new_price_box" />
+        app:layout_constraintEnd_toStartOf="@+id/tv_lari_sign"
+        app:layout_constraintTop_toTopOf="@+id/tv_lari_sign" />
 
-    <ImageView
-        android:id="@+id/imageView5"
-        android:layout_width="@dimen/mini_icon_size"
-        android:layout_height="@dimen/mini_icon_size"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/lari"
-        app:layout_constraintEnd_toStartOf="@+id/til_new_price_box"
-        app:layout_constraintTop_toTopOf="@+id/til_new_price_box" />
+    <!--<ImageView-->
+        <!--android:id="@+id/imageView5"-->
+        <!--android:layout_width="@dimen/mini_icon_size"-->
+        <!--android:layout_height="@dimen/mini_icon_size"-->
+        <!--android:layout_marginEnd="8dp"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--android:src="@drawable/ic_add_black_24dp"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@id/tv_magazia"/>-->
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/til_new_price_box"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:layout_marginEnd="6dp"
-        android:hint="@string/new_price"
-        android:minWidth="110dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_magazia">
+    <!--<com.google.android.material.textfield.TextInputLayout-->
+        <!--android:id="@+id/til_new_price_box"-->
+        <!--style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="6dp"-->
+        <!--android:layout_marginEnd="6dp"-->
+        <!--android:hint="@string/new_price"-->
+        <!--android:minWidth="110dp"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@id/tv_magazia">-->
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_new_price"
-            android:textSize="@dimen/medium_text_size"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        <!--<com.google.android.material.textfield.TextInputEditText-->
+            <!--android:id="@+id/et_new_price"-->
+            <!--android:textSize="@dimen/medium_text_size"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
 
-    </com.google.android.material.textfield.TextInputLayout>
+    <!--</com.google.android.material.textfield.TextInputLayout>-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

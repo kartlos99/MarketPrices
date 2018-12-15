@@ -3,6 +3,7 @@ package diakonidze.marketprices.customViews;
 import android.content.Context;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,8 @@ public class MyListItemView extends ConstraintLayout {
     private RealProduct product;
     private Boolean isChecked;
 
+    private static final String TAG = "My_List_ItemView";
+
     private ConstraintLayout parentView;
     private CheckBox checkBox;
     private Button btn_itemRemove;
@@ -34,24 +37,28 @@ public class MyListItemView extends ConstraintLayout {
         this.uncheckedConteiner = uncheckedConteiner;
         this.checkedConteiner = checkedConteiner;
         this.product = product;
-        this.isChecked = isChecked;
-
+//        this.isChecked = isChecked;
+        Log.d(TAG, "MyListItemView Constructor");
         initView();
 
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        checkBox.setOnClickListener(new OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onClick(View v) {
+                boolean isChecked = checkBox.isChecked();
+                product.setChecked(isChecked);
+
                 if (isChecked) {
+                    Log.d(TAG, "oncheck_click : 91");
                     tv_dasaxeleba.setPaintFlags(tv_dasaxeleba.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                     uncheckedConteiner.removeView(getView());
                     MyListItemView copy = new MyListItemView(context, product, true, uncheckedConteiner, checkedConteiner);
                     checkedConteiner.addView(copy);
                 } else {
+                    Log.d(TAG, "oncheck_click: 92");
                     tv_dasaxeleba.setPaintFlags(tv_dasaxeleba.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
                     checkedConteiner.removeView(getView());
                     MyListItemView copy = new MyListItemView(context, product, false, uncheckedConteiner, checkedConteiner);
                     uncheckedConteiner.addView(copy);
-
                 }
             }
         });
@@ -59,13 +66,14 @@ public class MyListItemView extends ConstraintLayout {
         btn_itemRemove.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "track : 10");
                 if (checkBox.isChecked()) {
                     checkedConteiner.removeView(getView());
                 } else {
                     uncheckedConteiner.removeView(getView());
                 }
-                for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++){
-                    if (GlobalConstants.MY_SHOPING_LIST.get(i).getId() == product.getId()){
+                for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
+                    if (GlobalConstants.MY_SHOPING_LIST.get(i).getId() == product.getId()) {
                         GlobalConstants.MY_SHOPING_LIST.remove(i);
                     }
                 }
@@ -74,6 +82,7 @@ public class MyListItemView extends ConstraintLayout {
     }
 
     private void initView() {
+        Log.d(TAG, " initView - myListItem");
         parentView = (ConstraintLayout) LayoutInflater.from(context).inflate(R.layout.my_list_row, this, true);
 
         checkBox = parentView.findViewById(R.id.checkBox);
@@ -86,7 +95,8 @@ public class MyListItemView extends ConstraintLayout {
         tv_magazia.setText(product.getMarketName());
         tv_price.setText(String.valueOf(product.getPrice()));
 
-        setState(isChecked);
+        checkBox.setChecked(product.getChecked());
+        setState(product.getChecked());
     }
 
     public View getView() {
@@ -94,14 +104,12 @@ public class MyListItemView extends ConstraintLayout {
     }
 
     public void setState(boolean ischecked) {
+        Log.d(TAG, " tavdapirveli check-is daeneba");
+//        checkBox.setChecked(isChecked);
         if (ischecked) {
-            checkBox.setChecked(true);
             tv_dasaxeleba.setPaintFlags(tv_dasaxeleba.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-//            cur_Item.setIsChecked(1);
         } else {
-            checkBox.setChecked(false);
             tv_dasaxeleba.setPaintFlags(tv_dasaxeleba.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-//            cur_Item.setIsChecked(0);
         }
     }
 

@@ -36,9 +36,9 @@ import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 
 public class GlobalConstants {
-//    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
 //    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
-    public static final String HOST_URL = "http://app.inf.ge/"; // server
+//    public static final String HOST_URL = "http://app.inf.ge/"; // server
 
     public static final String IMAGES_FOLDER = "images/";
     public static final String MARKET_LOGOS_FOLDER = "images/market_logos/";

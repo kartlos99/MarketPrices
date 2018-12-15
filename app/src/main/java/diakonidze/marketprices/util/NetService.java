@@ -43,7 +43,7 @@ public class NetService {
             @Override
             public void onResponse(JSONArray response) {
                 GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
-                Log.d(TAG, "resp_size = " + response.length());
+//                Log.d(TAG, "resp_size = " + response.length());
                 for (int i = 0; i < response.length(); i++) {
                     RealProduct realProduct = new RealProduct();
                     JSONObject jsonProduct = null;
@@ -98,7 +98,7 @@ public class NetService {
                         }
                     }
 
-                    Log.d(TAG, realProduct.toString());
+//                    Log.d(TAG, realProduct.toString());
                     GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
                 }
 
@@ -274,16 +274,27 @@ public class NetService {
     public void insertNewRealProduct(RealProduct realProduct) {
 
         final HashMap<String, String> params = new HashMap<String, String>();
+
         params.put("prod_id", String.valueOf(realProduct.getProductID()));
-        params.put("market_id", String.valueOf(realProduct.getMarketID()));
-        params.put("price", String.valueOf(realProduct.getPrice()));
-        params.put("brand_id", String.valueOf(realProduct.getBrandID()));
-        params.put("packing_id", String.valueOf(realProduct.getPackingID()));
-        params.put("comment", realProduct.getComment());
-        for (int i = 0; i < realProduct.getParamIDs().length; i++) {
-            params.put("paramIDs[" + i + "]", String.valueOf(realProduct.getParamIDs()[i]));
-            params.put("paramValues[" + i + "]", realProduct.getParamValues()[i]);
+        if (realProduct.getProductID() == 0){
+            params.put("prod_name", realProduct.getProduct_name());
+        }else {
+            params.put("packing_id", String.valueOf(realProduct.getPackingID()));
+            for (int i = 0; i < realProduct.getParamIDs().length; i++) {
+                params.put("paramIDs[" + i + "]", String.valueOf(realProduct.getParamIDs()[i]));
+                params.put("paramValues[" + i + "]", realProduct.getParamValues()[i]);
+            }
         }
+        params.put("market_id", String.valueOf(realProduct.getMarketID()));
+        if (realProduct.getMarketID() == 0){
+            params.put("market_name", realProduct.getMarketName());
+        }
+        params.put("brand_id", String.valueOf(realProduct.getBrandID()));
+        if (realProduct.getBrandID() == 0){
+            params.put("brand_name", realProduct.getBrandName());
+        }
+        params.put("price", String.valueOf(realProduct.getPrice()));
+        params.put("comment", realProduct.getComment());
 
         StringRequest request = new StringRequest(Request.Method.POST, GlobalConstants.INS_REAL_PROD
                 , new Response.Listener<String>() {
@@ -306,10 +317,8 @@ public class NetService {
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-
                 return params;
             }
-
         };
 
         Log.d("INS Real Prod Params", params.toString());

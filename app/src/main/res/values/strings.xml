@@ -15,4 +15,6 @@
     <string name="market">მაღაზია</string>
     <string name="additional_filter">დამატებითი ფილტრი</string>
     <string name="new_price">ახალი ფასი</string>
+    <string name="country">ქვეყანა</string>
+    <string name="enter_market_name"><![CDATA[მაღაზია & მისამართი]]></string>
 </resources>

@@ -30,14 +30,11 @@
                 android:id="@+id/unchecked_item_conteiner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/rect_for_container"
                 android:padding="6dp"
-                android:showDividers="middle"
                 android:divider="@drawable/divider_line"
-                android:dividerPadding="8dp"
-
+                android:showDividers="middle"
+                android:dividerPadding="60dp"
                 android:orientation="vertical">
-
 
             </LinearLayout>
 
@@ -50,10 +47,9 @@
                 android:id="@+id/checked_item_conteiner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/rect_for_container"
-                android:showDividers="middle"
                 android:divider="@drawable/divider_line"
-                android:dividerPadding="8dp"
+                android:showDividers="middle"
+                android:dividerPadding="3dp"
                 android:padding="6dp"
                 android:orientation="vertical">
 

@@ -1,16 +1,12 @@
 package diakonidze.marketprices;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
 //import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -18,16 +14,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.squareup.picasso.Picasso;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -35,15 +30,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.lang.invoke.ConstantCallSite;
 import java.util.ArrayList;
 
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
 import diakonidze.marketprices.customViews.ParamInputView;
+import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
@@ -68,8 +60,11 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     // vars
     private Context mContext = AddActivity.this;
     private int selectedPackID = 0;
-    private int selectedBrandID = 0;
+    //    private int selectedBrandID = 0;
     private RealProduct newRealProduct;
+    private Boolean validateProduct = false;
+    private Boolean validateMarket = false;
+    private Boolean validateBrand = false;
 
     @Override
     protected void onResume() {
@@ -78,7 +73,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             AutoCompliteProductAdapter productAdapter = new AutoCompliteProductAdapter(mContext, new ArrayList<>(GlobalConstants.PRODUCT_LIST));
             inputProduct.setAdapter(productAdapter);
         }
-        if (GlobalConstants.MARKETS != null){
+        if (GlobalConstants.MARKETS != null) {
             AutoCompliteMarketAdapter marketAdapter = new AutoCompliteMarketAdapter(mContext, new ArrayList<Market>(GlobalConstants.MARKETS));
             inputMarket.setAdapter(marketAdapter);
         }
@@ -186,7 +181,6 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Market market = (Market) inputMarket.getAdapter().getItem(position);
-                Log.d(TAG, " pos: " + position);
                 Log.d(TAG, " marketID: " + market.getId());
                 newRealProduct.setMarketID(market.getId());
 
@@ -218,49 +212,192 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
                 hideKeyboard();
                 for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
                     if (GlobalConstants.BRANDS.get(i).getBrandName().equals(inputBrand.getAdapter().getItem(position).toString())) {
-                        selectedBrandID = GlobalConstants.BRANDS.get(i).getId();
+                        newRealProduct.setBrandID(GlobalConstants.BRANDS.get(i).getId());
                     }
                 }
-
             }
         });
 
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newRealProduct.setPackingID(selectedPackID);
-                newRealProduct.setBrandID(selectedBrandID);
-                if (etPrice.getText().toString().isEmpty()){
-                    etPrice.setText("0");
-                }
-                String price = etPrice.getText().toString();
-                newRealProduct.setPrice(Float.valueOf(price));
-                newRealProduct.setComment(etMessage.getText().toString());
-
-                if (newRealProduct.getParamIDs() != null) {
-                    String[] paramVal = new String[newRealProduct.getParamIDs().length];
-
-                    for (int i = 0; i < paramConteiner.getChildCount(); i++) {
-                        ParamInputView paramInputView = (ParamInputView) paramConteiner.getChildAt(i);
-                        if (paramInputView != null) {
-                            paramVal[i] = paramInputView.getParamVal();
-                            newRealProduct.getParamIDs()[i] = paramInputView.getParamID();
-                        } else {
-                            paramVal[i] = "0";
-                            newRealProduct.getParamIDs()[i] = 0;
-                        }
-                    }
-                    newRealProduct.setParamValues(paramVal);
-                }
-
-                Log.d(TAG, " RealPR: " + newRealProduct.toString());
-                NetService ns = new NetService(mContext);
-                ns.setCompliteListener(AddActivity.this);
-                ns.insertNewRealProduct(newRealProduct);
+                validateProduct = checkProductInput(inputProduct.getText().toString());
+                validateMarket = checkMarketInput(inputMarket.getText().toString());
+                validateBrand = checkBrandInput(inputBrand.getText().toString());
+                checkAll();
             }
         });
 
         hideKeyboard();
+    }
+
+    private void checkAll() {
+        if (!validateProduct) {
+            // aseti produqti ar gvaqvs bazashi da ra vqnat?
+            askforProductValidation();
+        } else if (!validateMarket) {
+            // aseti magazia ar gvaqvs bazashi da ra vqnat?
+            askforMarketValidation();
+        } else if (!validateBrand) {
+            // aseti brandi ar gvaqvs bazashi da ra vqnat?
+            askforBrandValidation();
+        } else {
+            postNewProductData();
+        }
+    }
+
+    private void askforBrandValidation() {
+        Log.d(TAG, " ახალი ბრანდი");
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("ახალი ბრანდი/მწარმოებელი");
+        builder.setMessage("დაემატოს \'" + inputBrand.getText().toString() + "\' როგორც ახალი ბრენდი?")
+                .setPositiveButton("დიახ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        validateBrand = true;
+                        newRealProduct.setBrandID(0);
+                        newRealProduct.setBrandName(inputBrand.getText().toString());
+                        checkAll();
+                    }
+                })
+                .setNegativeButton("არა", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        inputBrand.requestFocus();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void askforMarketValidation() {
+        Log.d(TAG, " ახალი მაღაზია");
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("ახალი მაღაზია");
+        builder.setMessage("დაემატოს \'" + inputMarket.getText().toString() + "\' როგორც ახალი მაღაზია?")
+                .setPositiveButton("დიახ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        validateMarket = true;
+                        newRealProduct.setMarketID(0);
+                        newRealProduct.setMarketName(inputMarket.getText().toString());
+                        checkAll();
+                    }
+                })
+                .setNegativeButton("არა", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        inputMarket.requestFocus();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void askforProductValidation() {
+        Log.d(TAG, " ახალი პროდუქტი");
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("ახალი პროდუქტი");
+        builder.setMessage("დაემატოს \'" + inputProduct.getText().toString() + "\' როგორც ახალი პროდუქტი?")
+                .setPositiveButton("დიახ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        validateProduct = true;
+                        paramConteiner.removeAllViews();
+                        chipGroup.removeAllViews();
+                        newRealProduct.setProductID(0);
+                        newRealProduct.setProduct_name(inputProduct.getText().toString());
+                        newRealProduct.setPackingID(0);
+                        newRealProduct.setParamIDs(null);
+                        ImageView imageView = findViewById(R.id.img_product);
+                        TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
+                        tViewSelectedName.setText("");
+                        imageView.setImageResource(R.drawable.ic_no_image);
+                        checkAll();
+                    }
+                })
+                .setNegativeButton("არა", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        inputProduct.requestFocus();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void postNewProductData() {
+        Log.d(TAG, " postNewProductData: შევიდა");
+        if (validateProduct && validateMarket && validateBrand) {
+
+            if (newRealProduct.getProductID() != 0) {
+                newRealProduct.setPackingID(selectedPackID);
+            }
+
+            if (etPrice.getText().toString().isEmpty()) {
+                etPrice.setText("0");
+            }
+            String price = etPrice.getText().toString();
+            newRealProduct.setPrice(Float.valueOf(price));
+            newRealProduct.setComment(etMessage.getText().toString());
+
+            if (newRealProduct.getParamIDs() != null) {
+                String[] paramVal = new String[newRealProduct.getParamIDs().length];
+
+                for (int i = 0; i < paramConteiner.getChildCount(); i++) {
+                    ParamInputView paramInputView = (ParamInputView) paramConteiner.getChildAt(i);
+                    if (paramInputView != null) {
+                        paramVal[i] = paramInputView.getParamVal();
+                        newRealProduct.getParamIDs()[i] = paramInputView.getParamID();
+                    } else {
+                        paramVal[i] = "0";
+                        newRealProduct.getParamIDs()[i] = 0;
+                    }
+                }
+                newRealProduct.setParamValues(paramVal);
+            }
+
+            Log.d(TAG, " RealPR: " + newRealProduct.toString());
+            NetService ns = new NetService(mContext);
+            ns.setCompliteListener(AddActivity.this);
+            ns.insertNewRealProduct(newRealProduct);
+        }
+        validateProduct = false;
+        validateMarket = false;
+        validateBrand = false;
+    }
+
+    private boolean checkProductInput(String inputText) {
+        for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
+            if (GlobalConstants.PRODUCT_LIST.get(i).getName().equals(inputText)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkMarketInput(String inputText) {
+        for (int i = 0; i < GlobalConstants.MARKETS.size(); i++) {
+            if (GlobalConstants.MARKETS.get(i).toString().equals(inputText)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkBrandInput(String inputText) {
+        for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
+            if (GlobalConstants.BRANDS.get(i).getBrandName().equals(inputText)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void init_components() {
@@ -324,7 +461,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         formReset();
     }
 
-    private void formReset(){
+    private void formReset() {
         etPrice.setText("0");
         etMessage.setText("");
         paramConteiner.removeAllViews();
