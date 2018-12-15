@@ -64,6 +64,9 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
         }else {
             Picasso.get()
                     .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
+                    .resize(200, 200)
+                    .centerCrop()
+                    .error(R.drawable.ic_no_image)
                     .into(holder.img_product);
         }
 

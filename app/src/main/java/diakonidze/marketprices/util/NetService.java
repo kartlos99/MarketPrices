@@ -84,7 +84,7 @@ public class NetService {
                         } else if (!jsonProduct.isNull("p_image")) {
                             realProduct.setImage(jsonProduct.getString("p_image"));
                         } else {
-                            realProduct.setImage("");
+                            realProduct.setImage(realProduct.getId() + ".jpg");
                         }
 
                     } catch (JSONException e) {
@@ -98,7 +98,7 @@ public class NetService {
                         }
                     }
 
-//                    Log.d(TAG, realProduct.toString());
+                    Log.d(TAG, realProduct.toString());
                     GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
                 }
 
@@ -271,7 +271,7 @@ public class NetService {
     }
 
     // ***********************  axali realuri produqtis chawera  ********************************
-    public void insertNewRealProduct(RealProduct realProduct) {
+    public void insertNewRealProduct(RealProduct realProduct, String imageStr) {
 
         final HashMap<String, String> params = new HashMap<String, String>();
 
@@ -295,18 +295,29 @@ public class NetService {
         }
         params.put("price", String.valueOf(realProduct.getPrice()));
         params.put("comment", realProduct.getComment());
+        if (imageStr != null && !imageStr.isEmpty()){
+            params.put("image", imageStr);
+        }
 
         StringRequest request = new StringRequest(Request.Method.POST, GlobalConstants.INS_REAL_PROD
                 , new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d("resp_INS_PR:", response);
-                if (response.equals("0")) {
-                    GlobalConstants.showtext(netContext, "ჩაწერა ვერ მოხერხდა, server Error");
-                } else {
-                    // aq unda gavaketot rame roca namdvilad vicit rom chaiwera
-                    compliteListener.onComplite();
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int id = jsonObject.getInt("id");
+                    if (id == 0) {
+                        String error = jsonObject.getString("error");
+                        GlobalConstants.showtext(netContext, "ჩაწერა ვერ მოხერხდა, server Error:\n" + error);
+                    } else {
+                        // aq unda gavaketot rame roca namdvilad vicit rom chaiwera
+                        compliteListener.onComplite();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+
             }
         }, new Response.ErrorListener() {
             @Override

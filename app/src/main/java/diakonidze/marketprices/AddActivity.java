@@ -14,10 +14,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.squareup.picasso.Picasso;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,10 +32,13 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
@@ -45,6 +54,8 @@ import diakonidze.marketprices.util.NetService;
 public class AddActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
     private static final String TAG = "AddActivity";
+    private static final int CHOOSE_IMG_REQUEST = 902;
+    private static final int TAKE_IMG_REQUEST = 903;
 
     // layout elements - widgets
     private AutoCompleteTextView inputProduct;
@@ -55,6 +66,8 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private FloatingActionButton btnDone;
     private TextInputEditText etPrice;
     private TextInputEditText etMessage;
+    private Button btnChooseImage, btnTakeImage;
+    private ImageView imgPrRealImage;
 
 
     // vars
@@ -65,6 +78,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private Boolean validateProduct = false;
     private Boolean validateMarket = false;
     private Boolean validateBrand = false;
+    private Bitmap bitmap;
 
     @Override
     protected void onResume() {
@@ -366,7 +380,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             Log.d(TAG, " RealPR: " + newRealProduct.toString());
             NetService ns = new NetService(mContext);
             ns.setCompliteListener(AddActivity.this);
-            ns.insertNewRealProduct(newRealProduct);
+            ns.insertNewRealProduct(newRealProduct, imageToString(bitmap));
         }
         validateProduct = false;
         validateMarket = false;
@@ -445,7 +459,68 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         paramConteiner = findViewById(R.id.param_conteiner);
         chipGroup = findViewById(R.id.gr_packs);
         btnDone = findViewById(R.id.btn_add_real_product);
+        btnChooseImage = findViewById(R.id.btn_choose_image);
+        btnTakeImage = findViewById(R.id.btn_take_image);
+        imgPrRealImage = findViewById(R.id.img_prod_real_image);
 
+        btnChooseImage.setOnClickListener(chooseImageListener);
+        btnTakeImage.setOnClickListener(takeImageListener);
+    }
+
+    private View.OnClickListener chooseImageListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, "choose image cliked");
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(intent, CHOOSE_IMG_REQUEST);
+        }
+    };
+
+    private View.OnClickListener takeImageListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (hasCamera()) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, TAKE_IMG_REQUEST);
+            } else {
+                btnTakeImage.setEnabled(false);
+            }
+        }
+    };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHOOSE_IMG_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri path = data.getData();
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
+                imgPrRealImage.setImageBitmap(bitmap);
+                imgPrRealImage.setVisibility(View.VISIBLE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (requestCode == TAKE_IMG_REQUEST && resultCode == RESULT_OK && data != null) {
+            bitmap = (Bitmap) data.getExtras().get("data");
+            imgPrRealImage.setImageBitmap(bitmap);
+            imgPrRealImage.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private Boolean hasCamera() {
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+    }
+
+    private String imageToString(Bitmap bitmapImg) {
+        if (bitmapImg == null)
+            return "";
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmapImg.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+        byte[] imgBytes = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(imgBytes, Base64.DEFAULT);
     }
 
     private void hideKeyboard() {
