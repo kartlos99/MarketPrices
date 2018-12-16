@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -79,6 +80,37 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             }
         });
 
+        final String paramsText = paramFull;
+
+        holder.img_openBS.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                View bsView = LayoutInflater.from(context).inflate(R.layout.rp_modal_bs, null);
+                BottomSheetDialog bsDialog = new BottomSheetDialog(context);
+                bsDialog.setContentView(bsView);
+                bsDialog.show();
+
+                TextView tv_prName = bsView.findViewById(R.id.bs_name);
+                TextView tv_param = bsView.findViewById(R.id.tv_bs_param);
+                TextView tv_price = bsView.findViewById(R.id.tv_bs_price);
+                TextView tv_date = bsView.findViewById(R.id.tv_bs_date);
+                TextView tv_market = bsView.findViewById(R.id.tv_bs_market);
+                TextView tv_brand = bsView.findViewById(R.id.tv_bs_brand);
+                TextView tv_user = bsView.findViewById(R.id.tv_bs_user);
+                ImageView img_product = bsView.findViewById(R.id.img_bs_pr);
+                ImageView img_market = bsView.findViewById(R.id.img_bs_market);
+
+                tv_prName.setText(product.getProduct_name());
+                tv_param.setText(paramsText);
+                tv_price.setText(String.valueOf(product.getPrice()));
+                tv_date.setText(product.getPrAddDate());
+                tv_market.setText(product.getMarketName());
+                tv_brand.setText(product.getBrandName());
+                img_product.setImageDrawable(holder.img_product.getDrawable());
+
+            }
+        });
+
         setInMyListIndicatorIcon(holder, product);
     }
 
@@ -112,7 +144,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tv_Pname, tv_Mname, tv_Pparams, tv_Pprice, tv_lastdate;
-        ImageView img_product, img_addBtn;
+        ImageView img_product, img_addBtn, img_openBS;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -123,7 +155,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             tv_lastdate = itemView.findViewById(R.id.tv_rproduct_date);
             img_product = itemView.findViewById(R.id.img_real_prod);
             img_addBtn = itemView.findViewById(R.id.img_add_btn);
-
+            img_openBS = itemView.findViewById(R.id.img_open_bs);
         }
     }
 }

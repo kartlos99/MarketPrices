@@ -41,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import androidx.appcompat.widget.AppCompatImageButton;
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
 import diakonidze.marketprices.customViews.ParamInputView;
@@ -66,7 +67,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private FloatingActionButton btnDone;
     private TextInputEditText etPrice;
     private TextInputEditText etMessage;
-    private Button btnChooseImage, btnTakeImage;
+    private AppCompatImageButton btnChooseImage, btnTakeImage;
     private ImageView imgPrRealImage;
 
 

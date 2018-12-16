@@ -43,17 +43,28 @@
         app:layout_constraintTop_toBottomOf="@id/tv_prod_name" />
 
     <TextView
+        android:id="@+id/tv_lari_sign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/dark_green"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="₾"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_prod_price"/>
+
+    <TextView
         android:id="@+id/tv_prod_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="6dp"
-        android:drawableEnd="@drawable/ic_person_white_24px"
         android:text="4.35"
         android:textColor="@color/dark_green"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_lari_sign"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -85,6 +96,16 @@
         android:layout_marginEnd="8dp"
         android:background="@drawable/white_circle_green_stroke"
         android:layout_marginBottom="4dp"
+        android:layout_width="@dimen/mini_icon_size"
+        android:layout_height="@dimen/mini_icon_size" />
+
+    <ImageView
+        android:id="@+id/img_open_bs"
+        android:src="@drawable/three_dots_menu"
+        android:layout_marginEnd="8dp"
+        android:tint="#777"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="@dimen/mini_icon_size"
         android:layout_height="@dimen/mini_icon_size" />
 

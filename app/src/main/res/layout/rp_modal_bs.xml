@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.circularreveal.cardview.CircularRevealCardView
+        android:id="@+id/bs_carcview"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/img_bs_pr"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/market" />
+
+    </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
+
+    <TextView
+        android:id="@+id/bs_name"
+        android:layout_margin="8dp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/bs_carcview"
+        android:text="klsf lnfjdhfersf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_bs_param"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="param"
+        android:layout_margin="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bs_name" />
+
+    <TextView
+        android:id="@+id/tv_bs_price"
+        android:text="pasi"
+        android:layout_marginEnd="4dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/dark_green"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_bs_param"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_lari_sign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:textColor="@color/dark_green"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="₾"
+        app:layout_constraintStart_toEndOf="@id/tv_bs_price"
+        app:layout_constraintTop_toTopOf="@id/tv_bs_price"/>
+
+    <TextView
+        android:id="@+id/tv_bs_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginEnd="8dp"
+        android:text="date"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_bs_price"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_bs_price" />
+
+    <ImageView
+        android:id="@+id/img_bs_market"
+        android:layout_width="@dimen/field_icon_size"
+        android:layout_height="@dimen/field_icon_size"
+        android:layout_margin="8dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_bs_market"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_bs_market" />
+
+    <TextView
+        android:id="@+id/tv_bs_market"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="market"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_bs_price" />
+
+    <TextView
+        android:id="@+id/tv_bs_brand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="brand"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_bs_market" />
+
+    <TextView
+        android:id="@+id/tv_bs_user"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginEnd="8dp"
+        android:drawableTint="@color/dark_green"
+        android:drawableStart="@drawable/ic_person_white_24px"
+        android:text="user"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_bs_brand" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

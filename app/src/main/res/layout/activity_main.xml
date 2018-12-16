@@ -133,7 +133,7 @@
                 app:checkedIcon="@drawable/ic_person_white_24px"
                 app:checkedIconEnabled="true"
                 app:chipStrokeColor="@color/colorAccent"
-                app:chipStrokeWidth="2dp" />
+                app:chipStrokeWidth="6dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chi3p7"
