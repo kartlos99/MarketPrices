@@ -38,7 +38,9 @@ public class NetService {
     }
 
     public void getSearchedProducts(String query) {
-        JsonArrayRequest prodSearchRequest = new JsonArrayRequest(GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query
+        String url = GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query;
+        Log.d(TAG, "search_URL: "+url);
+        JsonArrayRequest prodSearchRequest = new JsonArrayRequest(url
                 , new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -235,6 +237,7 @@ public class NetService {
                     }
                 }
 
+                GlobalConstants.MARKETS_HASH = new HashMap<>();
                 for (int i = 0; i < jsonMarkets.length(); i++) {
                     try {
                         JSONObject item = jsonMarkets.getJSONObject(i);
@@ -242,18 +245,23 @@ public class NetService {
                                 item.getInt("id"),
                                 item.getString("marketName")
                         );
-                        market.setLogo(item.getString("logo"));
+                        if (!item.isNull("logo")){
+                            market.setLogo(item.getString("logo"));
+                        }
                         market.setSn(item.getString("sn"));
                         market.setAddress(item.getString("address"));
-                        market.setComment(item.getString("comment"));
+                        if (!item.isNull("comment")) {
+                            market.setComment(item.getString("comment"));
+                        }
 
                         GlobalConstants.MARKETS.add(market);
+                        GlobalConstants.MARKETS_HASH.put(item.getString("id"), market);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
 
-                Log.d(TAG, " MARKETs SIZE : " + GlobalConstants.MARKETS.size());
+                Log.d(TAG, " MARKETs SIZE : " + GlobalConstants.MARKETS_HASH.size());
 
                 GlobalConstants.COMPLITE_INITIAL_DOWNLOADS = true;
                 long time = System.currentTimeMillis();

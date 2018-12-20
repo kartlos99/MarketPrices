@@ -7,7 +7,7 @@ public class Market {
 
     @Override
     public String toString() {
-        if (address != null && !address.isEmpty()){
+        if (address != null && !address.isEmpty()) {
             return marketName + ", " + address;
         }
         return marketName;
@@ -26,7 +26,6 @@ public class Market {
                 ", locationY=" + locationY +
                 '}';
     }
-
 
 
     public int getId() {
@@ -104,5 +103,8 @@ public class Market {
     public Market(int id, String marketName) {
         this.id = id;
         this.marketName = marketName;
+        comment = "";
+        image = "";
+        logo = "";
     }
 }

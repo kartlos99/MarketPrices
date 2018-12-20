@@ -36,9 +36,9 @@ import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 
 public class GlobalConstants {
-//    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
 //    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
-    public static final String HOST_URL = "http://app.inf.ge/"; // server
+//    public static final String HOST_URL = "http://app.inf.ge/"; // server
 
     public static final String IMAGES_FOLDER = "images/";
     public static final String MARKET_LOGOS_FOLDER = "images/market_logos/";
@@ -61,6 +61,7 @@ public class GlobalConstants {
     public static List<RealProduct> MY_SHOPING_LIST = new ArrayList<>();
 
     public static HashMap<String, Paramiter> PARAMIERS_HASH;
+    public static HashMap<String, Market> MARKETS_HASH;
 
     public static void showtext(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();

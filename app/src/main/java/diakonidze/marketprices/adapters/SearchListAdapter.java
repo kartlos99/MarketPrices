@@ -1,14 +1,18 @@
 package diakonidze.marketprices.adapters;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.circularreveal.cardview.CircularRevealCardView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -17,6 +21,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import diakonidze.marketprices.R;
+import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
 
@@ -25,10 +30,32 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
     private Context context;
     private static final String TAG = "Search_List_Adapter";
     private List<RealProduct> productList;
+    private ColorStateList colorList1;
+    private ColorStateList colorList2;
 
     public SearchListAdapter(Context context, List<RealProduct> productList) {
         this.context = context;
         this.productList = productList;
+        colorList1 = new ColorStateList(
+                new int[][]{
+                        new int[]{android.R.attr.state_pressed},
+                        new int[]{}
+                },
+                new int[]{
+                        context.getResources().getColor(R.color.colorAccent),
+                        context.getResources().getColor(R.color.colorPrimary)
+                }
+        );
+        colorList2 = new ColorStateList(
+                new int[][]{
+                        new int[]{android.R.attr.state_pressed},
+                        new int[]{}
+                },
+                new int[]{
+                        context.getResources().getColor(R.color.colorAccent),
+                        context.getResources().getColor(R.color.colorRemoveIcon)
+                }
+        );
     }
 
     @NonNull
@@ -42,7 +69,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
         final RealProduct product = productList.get(position);
-        Log.d(TAG, "curr_Prod_in_list: "+product.toString());
+        Log.d(TAG, "curr_Prod_in_list: " + product.toString());
 
         holder.tv_Pname.setText(product.getProduct_name());
         String paramFull = "";
@@ -51,7 +78,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             paramFull += Objects.requireNonNull(GlobalConstants.PARAMIERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getName() + " "
                     + product.getParamValues()[i] + " "
                     + Objects.requireNonNull(GlobalConstants.PARAMIERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getMeasureUnit();
-            if (i < product.getParamIDs().length - 1){
+            if (i < product.getParamIDs().length - 1) {
                 paramFull += "\n";
             }
         }
@@ -62,7 +89,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
 
         if (product.getImage().isEmpty()) {
             holder.img_product.setImageResource(R.drawable.ic_no_image);
-        }else {
+        } else {
             Picasso.get()
                     .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
                     .resize(200, 200)
@@ -76,7 +103,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             public void onClick(View view) {
                 product.setInMyList(!product.getInMyList());
                 changeMyList(product);
-                setInMyListIndicatorIcon(holder, product);
+                setInMyListIndicator(holder.img_addBtn, product.getInMyList());
             }
         });
 
@@ -90,51 +117,80 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
                 bsDialog.setContentView(bsView);
                 bsDialog.show();
 
-                TextView tv_prName = bsView.findViewById(R.id.bs_name);
+                final TextView tv_prName = bsView.findViewById(R.id.bs_name);
                 TextView tv_param = bsView.findViewById(R.id.tv_bs_param);
                 TextView tv_price = bsView.findViewById(R.id.tv_bs_price);
                 TextView tv_date = bsView.findViewById(R.id.tv_bs_date);
                 TextView tv_market = bsView.findViewById(R.id.tv_bs_market);
                 TextView tv_brand = bsView.findViewById(R.id.tv_bs_brand);
                 TextView tv_user = bsView.findViewById(R.id.tv_bs_user);
-                ImageView img_product = bsView.findViewById(R.id.img_bs_pr);
+                TextView tv_packing = bsView.findViewById(R.id.tv_bs_packing);
+                final ImageView img_product = bsView.findViewById(R.id.img_bs_pr);
                 ImageView img_market = bsView.findViewById(R.id.img_bs_market);
+                final ImageView img_basket = bsView.findViewById(R.id.img_bs_basket);
+
+                Market market = GlobalConstants.MARKETS_HASH.get(String.valueOf(product.getMarketID()));
 
                 tv_prName.setText(product.getProduct_name());
                 tv_param.setText(paramsText);
                 tv_price.setText(String.valueOf(product.getPrice()));
                 tv_date.setText(product.getPrAddDate());
-                tv_market.setText(product.getMarketName());
+                tv_market.setText(market.toString());
                 tv_brand.setText(product.getBrandName());
+                tv_packing.setText(product.getPacking());
                 img_product.setImageDrawable(holder.img_product.getDrawable());
+                final CircularRevealCardView cardView = bsView.findViewById(R.id.bs_carcview);
+
+                Log.d(TAG,"market: " + market.fulltoString());
+                if (!market.getLogo().isEmpty()){
+                    Picasso.get()
+                            .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
+                            .error(R.drawable.ic_no_image)
+                            .into(img_market);
+                }
+
+                setInMyListIndicator(img_basket, product.getInMyList());
+                img_basket.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        product.setInMyList(!product.getInMyList());
+                        changeMyList(product);
+                        setInMyListIndicator(holder.img_addBtn, product.getInMyList());
+                        setInMyListIndicator(img_basket, product.getInMyList());
+
+                        if (product.getInMyList()){
+                            Animation animation = AnimationUtils.loadAnimation(context, R.anim.anim_jump_right);
+                            cardView.startAnimation(animation);
+                        }
+                    }
+                });
 
             }
         });
 
-        setInMyListIndicatorIcon(holder, product);
+        setInMyListIndicator(holder.img_addBtn, product.getInMyList());
     }
 
-    private void changeMyList(RealProduct realProduct){
+    private void changeMyList(RealProduct realProduct) {
         if (realProduct.getInMyList()) {
             GlobalConstants.MY_SHOPING_LIST.add(realProduct);
-        }else {
-            for (int i=0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++){
-                if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(i).getId()){
+        } else {
+            for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
+                if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(i).getId()) {
                     GlobalConstants.MY_SHOPING_LIST.remove(i);
                 }
             }
         }
     }
 
-    private void setInMyListIndicatorIcon(ViewHolder viewHolder, RealProduct realProduct) {
-        if (realProduct.getInMyList()) {
-            viewHolder.img_addBtn.setImageResource(R.drawable.ic_check_black_24dp);
-            viewHolder.img_addBtn.setBackgroundResource(R.drawable.green_circle);
-        } else {
-            viewHolder.img_addBtn.setImageResource(R.drawable.ic_add_black_24dp);
-            viewHolder.img_addBtn.setBackgroundResource(R.drawable.white_circle_green_stroke);
+    private void setInMyListIndicator(ImageView imageView, Boolean isInBasket){
+        if (isInBasket){
+            imageView.setImageResource(R.drawable.ic_remove_shopping_24dp);
+            imageView.setImageTintList(colorList2);
+        }else {
+            imageView.setImageResource(R.drawable.ic_add_shopping_24dp);
+            imageView.setImageTintList(colorList1);
         }
-        Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
     }
 
     @Override

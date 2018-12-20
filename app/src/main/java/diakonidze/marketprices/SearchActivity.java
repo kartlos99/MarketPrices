@@ -56,12 +56,13 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty())
-                    ns.getSearchedProducts("");
+                Log.d(TAG, " onChange: " + newText);
+                if (newText.length() > 1 || newText.isEmpty())
+                    ns.getSearchedProducts(newText);
                 return false;
             }
         });
-        Log.d(TAG, " onChange: " + searchView.getQuery().toString());
+
     }
 
     private void init_components() {

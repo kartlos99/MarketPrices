@@ -8,4 +8,6 @@
     <dimen name="field_icon_size">40dp</dimen>
     <dimen name="mini_icon_size">24dp</dimen>
     <dimen name="medium_text_size">12sp</dimen>
+    <dimen name="small_text_size">10sp</dimen>
+    <dimen name="line_space">12dp</dimen>
 </resources>

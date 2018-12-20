@@ -8,11 +8,11 @@
 
     <com.google.android.material.circularreveal.cardview.CircularRevealCardView
         android:id="@+id/bs_carcview"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="8dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_margin="@dimen/line_space"
+        app:cardCornerRadius="36dp"
+        app:cardElevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -26,9 +26,19 @@
 
     </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
 
+    <ImageView
+        android:id="@+id/img_bs_basket"
+        android:layout_width="@dimen/field_icon_size"
+        android:layout_height="@dimen/field_icon_size"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="18dp"
+        android:src="@drawable/ic_add_shopping_24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/bs_name"
-        android:layout_margin="8dp"
+        android:layout_marginTop="@dimen/line_space"
         android:textStyle="bold"
         android:textAlignment="center"
         app:layout_constraintTop_toBottomOf="@id/bs_carcview"
@@ -43,15 +53,26 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:text="param"
-        android:layout_margin="4dp"
+        android:layout_marginTop="@dimen/line_space"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bs_name" />
 
     <TextView
+        android:id="@+id/tv_bs_packing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/small_text_size"
+        android:layout_marginEnd="8dp"
+        android:text="pack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_bs_param" />
+
+    <TextView
         android:id="@+id/tv_bs_price"
         android:text="pasi"
         android:layout_marginEnd="4dp"
+        android:layout_marginTop="@dimen/line_space"
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="@color/dark_green"
@@ -80,7 +101,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginEnd="8dp"
         android:text="date"
-        android:textSize="10sp"
+        android:textSize="@dimen/small_text_size"
         app:layout_constraintBottom_toBottomOf="@+id/tv_bs_price"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tv_bs_price" />
@@ -99,7 +120,7 @@
         android:id="@+id/tv_bs_market"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/line_space"
         android:text="market"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -109,7 +130,7 @@
         android:id="@+id/tv_bs_brand"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/line_space"
         android:text="brand"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -119,8 +140,8 @@
         android:id="@+id/tv_bs_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:layout_marginEnd="8dp"
+        android:layout_marginTop="@dimen/line_space"
         android:drawableTint="@color/dark_green"
         android:drawableStart="@drawable/ic_person_white_24px"
         android:text="user"
