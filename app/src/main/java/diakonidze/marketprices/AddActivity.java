@@ -1,5 +1,8 @@
 package diakonidze.marketprices;
 
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,9 +22,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -32,31 +38,37 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Objects;
 
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.content.FileProvider;
 import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
 import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
 import diakonidze.marketprices.customViews.ParamInputView;
-import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
 import diakonidze.marketprices.util.NetService;
 
+import static androidx.core.content.FileProvider.getUriForFile;
+
 public class AddActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
     private static final String TAG = "AddActivity";
     private static final int CHOOSE_IMG_REQUEST = 902;
     private static final int TAKE_IMG_REQUEST = 903;
+    private static final int MAX_IMAGE_SIZE = 800;
 
     // layout elements - widgets
     private AutoCompleteTextView inputProduct;
@@ -73,13 +85,17 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
 
     // vars
     private Context mContext = AddActivity.this;
-    private int selectedPackID = 0;
+    //    private int selectedPackID = 0;
     //    private int selectedBrandID = 0;
     private RealProduct newRealProduct;
     private Boolean validateProduct = false;
     private Boolean validateMarket = false;
     private Boolean validateBrand = false;
     private Bitmap bitmap;
+    private Uri imagePath;
+    private String pictureImagePath = "";
+    private String mCurrentPhotoPath = "";
+    private int lastPhotoImportOper = 0;
 
     @Override
     protected void onResume() {
@@ -99,6 +115,9 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable("realPR", newRealProduct);
+        outState.putParcelable("image_path_uri", imagePath);
+        outState.putString("image_path_str", mCurrentPhotoPath);
+        outState.putInt("img_op", lastPhotoImportOper);
     }
 
     @Override
@@ -110,12 +129,39 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         if (savedInstanceState != null) {
             // recreate moxda
             newRealProduct = (RealProduct) savedInstanceState.getSerializable("realPR");
+            if (GlobalConstants.PRODUCT_LIST != null) {
+                Product product;
+                for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
+                    if (newRealProduct.getProductID() == GlobalConstants.PRODUCT_LIST.get(i).getId()) {
+                        product = GlobalConstants.PRODUCT_LIST.get(i);
+                        afterProductSelected(product);
+                        break;
+                    }
+                }
+            }
+            Chip chip = chipGroup.findViewWithTag(newRealProduct.getPackingID());
+            if (chip != null)
+                chip.setChecked(true);
+
+            lastPhotoImportOper = savedInstanceState.getInt("img_op");
+            if (lastPhotoImportOper == CHOOSE_IMG_REQUEST) {
+                imagePath = (Uri) savedInstanceState.get("image_path_uri");
+                if (imagePath != null)
+                    loadPrImageFromPath(imagePath);
+            }
+            if (lastPhotoImportOper == TAKE_IMG_REQUEST) {
+                mCurrentPhotoPath = savedInstanceState.getString("image_path_str");
+                if (mCurrentPhotoPath != null)
+                    setPic();
+            }
+
         } else {
             newRealProduct = new RealProduct();
         }
 
         Log.d(TAG, " RealPR: " + newRealProduct.toString());
 
+        // productis archeva
         inputProduct.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -126,69 +172,11 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
                 newRealProduct.setProductID(product.getId());
                 newRealProduct.setParamIDs(product.getParams());
 
-                ImageView imageView = findViewById(R.id.img_product);
-                TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
-
-                tViewSelectedName.setText(product.getName());
-
-                if (product.getImage().isEmpty()) {
-                    imageView.setImageResource(R.drawable.ic_no_image);
-                } else {
-                    Log.d("IMAGE", product.getImage());
-                    Picasso.get()
-                            .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
-                            .into(imageView);
-                }
-
-                int[] productPacks = product.getPacks();
-                chipGroup.removeAllViews();
-
-                for (int j = 0; j < product.getPacks().length; j++) {
-                    Chip chip = new Chip(mContext);
-
-                    for (int k = 0; k < GlobalConstants.PACKS.size(); k++) {
-                        if (GlobalConstants.PACKS.get(k).getId() == productPacks[j]) {
-                            chip.setText(GlobalConstants.PACKS.get(k).getValue());
-                            chip.setCheckable(true);
-                            chip.setElevation(3.2f);
-                            chip.setTag(GlobalConstants.PACKS.get(k).getId());
-                            chip.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Chip chipx = (Chip) v;
-                                    if (chipx.isChecked()) {
-                                        selectedPackID = (int) chipx.getTag();
-                                    } else {
-                                        selectedPackID = 0;
-                                    }
-                                    Boolean b = chipx.isChecked();
-                                    Log.d(TAG, "Chip_TEXT: " + chipx.getText() + " state: " + b + " : TAG: " + chipx.getTag());
-                                    hideKeyboard();
-                                }
-                            });
-                            Log.d(TAG, "ChipID: " + chip.getId());
-                            chipGroup.addView(chip);
-                        }
-                    }
-                }
-
-                int[] params = product.getParams();
-                paramConteiner.removeAllViews();
-
-                for (int j = 0; j < params.length; j++) {
-
-                    for (int k = 0; k < GlobalConstants.PARAMITERS.size(); k++) {
-                        if (params[j] == GlobalConstants.PARAMITERS.get(k).getId()) {
-                            ParamInputView paramInputView = new ParamInputView(mContext, GlobalConstants.PARAMITERS.get(k));
-                            paramInputView.setTag(GlobalConstants.PARAMITERS.get(k).getCode());
-
-                            paramConteiner.addView(paramInputView);
-                        }
-                    }
-                }
-
+                afterProductSelected(product);
                 hideKeyboard();
             }
+
+
         });
 
         // magazia avirchiet
@@ -244,6 +232,68 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         });
 
         hideKeyboard();
+    }
+
+    private void afterProductSelected(Product product) {
+        ImageView imageView = findViewById(R.id.img_product);
+        TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
+
+        tViewSelectedName.setText(product.getName());
+        if (product.getImage().isEmpty()) {
+            imageView.setImageResource(R.drawable.ic_no_image);
+        } else {
+            Log.d("IMAGE", product.getImage());
+            Picasso.get()
+                    .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
+                    .into(imageView);
+        }
+
+        int[] productPacks = product.getPacks();
+        chipGroup.removeAllViews();
+
+        for (int j = 0; j < product.getPacks().length; j++) {
+            Chip chip = new Chip(mContext);
+
+            for (int k = 0; k < GlobalConstants.PACKS.size(); k++) {
+                if (GlobalConstants.PACKS.get(k).getId() == productPacks[j]) {
+                    chip.setText(GlobalConstants.PACKS.get(k).getValue());
+                    chip.setCheckable(true);
+                    chip.setElevation(3.2f);
+                    chip.setTag(GlobalConstants.PACKS.get(k).getId());
+                    chip.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Chip chipx = (Chip) v;
+                            if (chipx.isChecked()) {
+                                newRealProduct.setPackingID((int) chipx.getTag());
+                            } else {
+                                newRealProduct.setPackingID(0);
+                            }
+                            Boolean b = chipx.isChecked();
+                            Log.d(TAG, "Chip_TEXT: " + chipx.getText() + " state: " + b + " : TAG: " + chipx.getTag());
+                            hideKeyboard();
+                        }
+                    });
+                    Log.d(TAG, "ChipID: " + chip.getId());
+                    chipGroup.addView(chip);
+                }
+            }
+        }
+
+        int[] params = product.getParams();
+        paramConteiner.removeAllViews();
+
+        for (int j = 0; j < params.length; j++) {
+
+            for (int k = 0; k < GlobalConstants.PARAMITERS.size(); k++) {
+                if (params[j] == GlobalConstants.PARAMITERS.get(k).getId()) {
+                    ParamInputView paramInputView = new ParamInputView(mContext, GlobalConstants.PARAMITERS.get(k));
+                    paramInputView.setTag(GlobalConstants.PARAMITERS.get(k).getCode());
+
+                    paramConteiner.addView(paramInputView);
+                }
+            }
+        }
     }
 
     private void checkAll() {
@@ -351,8 +401,8 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         Log.d(TAG, " postNewProductData: შევიდა");
         if (validateProduct && validateMarket && validateBrand) {
 
-            if (newRealProduct.getProductID() != 0) {
-                newRealProduct.setPackingID(selectedPackID);
+            if (newRealProduct.getProductID() == 0) {
+                newRealProduct.setPackingID(0);
             }
 
             if (etPrice.getText().toString().isEmpty()) {
@@ -480,35 +530,110 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     };
 
     private View.OnClickListener takeImageListener = new View.OnClickListener() {
+        @SuppressLint("WrongConstant")
         @Override
         public void onClick(View v) {
             if (hasCamera()) {
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(intent, TAKE_IMG_REQUEST);
+
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                // Ensure that there's a camera activity to handle the intent
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    deleteTempImageFile(mCurrentPhotoPath);
+
+                    // Create the File where the photo should go
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException ex) {
+                        // Error occurred while creating the File
+                        Log.d(TAG, "ar sheiqmna faili: " + ex.getMessage());
+                    }
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        Uri photoURI = FileProvider.getUriForFile(mContext,
+                                "diakonidze.marketprices",
+                                photoFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(takePictureIntent, TAKE_IMG_REQUEST);
+                    }
+                }
+
             } else {
                 btnTakeImage.setEnabled(false);
             }
         }
     };
 
+    private void deleteTempImageFile(String filePath) {
+        File oldFile = new File(filePath);
+        if (oldFile.exists()) {
+            oldFile.delete();
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        lastPhotoImportOper = requestCode;
+
         if (requestCode == CHOOSE_IMG_REQUEST && resultCode == RESULT_OK && data != null) {
-            Uri path = data.getData();
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
-                imgPrRealImage.setImageBitmap(bitmap);
-                imgPrRealImage.setVisibility(View.VISIBLE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            deleteTempImageFile(mCurrentPhotoPath);
+            imagePath = data.getData();
+            loadPrImageFromPath(imagePath);
         }
-        if (requestCode == TAKE_IMG_REQUEST && resultCode == RESULT_OK && data != null) {
-            bitmap = (Bitmap) data.getExtras().get("data");
+
+        if (requestCode == TAKE_IMG_REQUEST && resultCode == RESULT_OK) {
+            Log.d(TAG, "- Take Image Result -");
+            setPic();
+        }
+    }
+
+    private void loadPrImageFromPath(Uri path) {
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), path);
             imgPrRealImage.setImageBitmap(bitmap);
             imgPrRealImage.setVisibility(View.VISIBLE);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    private void setPic() {
+        // Get the dimensions of the View
+        int targetW = imgPrRealImage.getWidth();
+        int targetH = imgPrRealImage.getHeight();
+
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        // Determine how much to scale down the image
+//        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+
+        // Decode the image file into a Bitmap sized to fill the View
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = 4;
+
+        bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        imgPrRealImage.setImageBitmap(bitmap);
     }
 
     private Boolean hasCamera() {
@@ -518,8 +643,16 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private String imageToString(Bitmap bitmapImg) {
         if (bitmapImg == null)
             return "";
+        if (bitmapImg.getWidth() > MAX_IMAGE_SIZE) {
+            float ratio = Math.min(
+                    (float) MAX_IMAGE_SIZE / bitmapImg.getWidth(),
+                    (float) MAX_IMAGE_SIZE / bitmapImg.getHeight());
+            int width = Math.round(ratio * bitmapImg.getWidth());
+            int height = Math.round(ratio * bitmapImg.getHeight());
+            bitmapImg = Bitmap.createScaledBitmap(bitmapImg, width, height, true);
+        }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmapImg.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+        bitmapImg.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream);
         byte[] imgBytes = byteArrayOutputStream.toByteArray();
         return Base64.encodeToString(imgBytes, Base64.DEFAULT);
     }
@@ -547,5 +680,11 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         inputMarket.setText("");
         ImageView imageView = findViewById(R.id.img_market_logo);
         imageView.setImageResource(R.drawable.market);
+        imgPrRealImage.setImageResource(R.drawable.ic_no_image);
+        deleteTempImageFile(mCurrentPhotoPath);
+        ImageView imagePr = findViewById(R.id.img_product);
+        imagePr.setImageResource(R.drawable.ic_no_image);
+        TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
+        tViewSelectedName.setText("");
     }
 }

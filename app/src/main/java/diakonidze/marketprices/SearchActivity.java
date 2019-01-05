@@ -37,6 +37,12 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
     NetService ns;
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("filter_text", searchView.getQuery().toString());
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
@@ -45,7 +51,12 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
 
         ns = new NetService(mContext);
         ns.setCompliteListener(this);
-        ns.getSearchedProducts("");
+
+        if (savedInstanceState != null){
+            ns.getSearchedProducts(savedInstanceState.getString("filter_text"));
+        }else {
+            ns.getSearchedProducts("");
+        }
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

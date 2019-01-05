@@ -13,6 +13,7 @@ public class RealProduct implements Serializable {
     private Boolean checked = false;
 
     public RealProduct() {
+        packingID = 0;
     }
 
     @Override
