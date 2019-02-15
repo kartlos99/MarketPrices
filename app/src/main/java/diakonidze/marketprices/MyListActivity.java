@@ -1,19 +1,21 @@
 package diakonidze.marketprices;
 
-import android.content.Context;
-import android.content.Intent;
 import androidx.annotation.NonNull;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import diakonidze.marketprices.customViews.MyListItemView;
-import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
+
+import diakonidze.marketprices.R;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MyListActivity extends AppCompatActivity {
 
@@ -24,7 +26,7 @@ public class MyListActivity extends AppCompatActivity {
     private LinearLayout uncheckedConteiner, checkedConteiner;
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("key", 1);
     }
@@ -37,16 +39,16 @@ public class MyListActivity extends AppCompatActivity {
         init_components();
 
 //        if (savedInstanceState == null) {
-            Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
-            for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
-                if (GlobalConstants.MY_SHOPING_LIST.get(i).getChecked()){
-                    MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), true, uncheckedConteiner, checkedConteiner);
-                    checkedConteiner.addView(itemView);
-                }else {
-                    MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
-                    uncheckedConteiner.addView(itemView);
-                }
+        Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
+        for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
+            if (GlobalConstants.MY_SHOPING_LIST.get(i).getChecked()){
+                MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), true, uncheckedConteiner, checkedConteiner);
+                checkedConteiner.addView(itemView);
+            }else {
+                MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
+                uncheckedConteiner.addView(itemView);
             }
+        }
 //        }
 
 

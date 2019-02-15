@@ -1,28 +1,24 @@
 package diakonidze.marketprices;
 
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-
 import androidx.annotation.NonNull;
-
-//import com.android.volley.Request;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.squareup.picasso.Picasso;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.content.FileProvider;
+import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
+import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
+import diakonidze.marketprices.customViews.ParamInputView;
+import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.RealProduct;
+import diakonidze.marketprices.util.GlobalConstants;
+import diakonidze.marketprices.util.NetService;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -42,26 +38,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.squareup.picasso.Picasso;
+
+import diakonidze.marketprices.R;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Objects;
-
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.core.content.FileProvider;
-import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
-import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
-import diakonidze.marketprices.customViews.ParamInputView;
-import diakonidze.marketprices.models.Market;
-import diakonidze.marketprices.models.Product;
-import diakonidze.marketprices.models.RealProduct;
-import diakonidze.marketprices.util.GlobalConstants;
-import diakonidze.marketprices.util.NetService;
-
-import static androidx.core.content.FileProvider.getUriForFile;
 
 public class AddActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
@@ -258,7 +249,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
                 if (GlobalConstants.PACKS.get(k).getId() == productPacks[j]) {
                     chip.setText(GlobalConstants.PACKS.get(k).getValue());
                     chip.setCheckable(true);
-                    chip.setElevation(3.2f);
+
                     chip.setTag(GlobalConstants.PACKS.get(k).getId());
                     chip.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -530,7 +521,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     };
 
     private View.OnClickListener takeImageListener = new View.OnClickListener() {
-        @SuppressLint("WrongConstant")
+//        @SuppressLint("WrongConstant")
         @Override
         public void onClick(View v) {
             if (hasCamera()) {

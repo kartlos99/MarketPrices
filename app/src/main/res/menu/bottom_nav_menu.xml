@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
         android:id="@+id/bnm_promotion"
         android:title="@string/title_page1"
@@ -21,5 +20,4 @@
         android:id="@+id/bnm_user"
         android:title="@string/title_page5"
         android:icon="@drawable/ic_person_white_24px"/>
-
 </menu>

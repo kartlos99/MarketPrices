@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.util.GlobalConstants;
@@ -102,6 +103,4 @@ public class AutoCompliteProductAdapter extends ArrayAdapter<Product> {
             Log.d("publishRes", "changed");
         }
     };
-
-
 }

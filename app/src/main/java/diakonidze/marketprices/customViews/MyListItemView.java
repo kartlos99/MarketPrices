@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;

@@ -26,13 +26,18 @@ public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
     private List<Market> fullMarketList, filteredMarketList;
     ImageView imageView;
 
-    public AutoCompliteMarketAdapter(@NonNull @android.support.annotation.NonNull Context context, @NonNull @android.support.annotation.NonNull List<Market> marketList) {
-        super(context, 0, marketList);
-        fullMarketList = new ArrayList<>(marketList);
+    public AutoCompliteMarketAdapter(@NonNull Context context, @NonNull List<Market> objects) {
+        super(context, 0, objects);
+        fullMarketList = new ArrayList<>(objects);
     }
 
-    @NonNull
-    @android.support.annotation.NonNull
+//    public AutoCompliteMarketAdapter(@NonNull @android.support.annotation.NonNull Context context, @NonNull @android.support.annotation.NonNull List<Market> marketList) {
+//        super(context, 0, marketList);
+//        fullMarketList = new ArrayList<>(marketList);
+//    }
+
+//    @NonNull
+//    @android.support.annotation.NonNull
     @Override
     public Filter getFilter() {
         return marketFilter;

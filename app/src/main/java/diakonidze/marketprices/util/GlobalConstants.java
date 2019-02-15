@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import diakonidze.marketprices.AddActivity;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;

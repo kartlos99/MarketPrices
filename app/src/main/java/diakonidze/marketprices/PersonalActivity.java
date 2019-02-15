@@ -1,13 +1,16 @@
 package diakonidze.marketprices;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Context;
 import android.content.Intent;
-import androidx.annotation.NonNull;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class PersonalActivity extends AppCompatActivity {
 

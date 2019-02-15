@@ -1,25 +1,22 @@
 package diakonidze.marketprices;
 
-import android.content.Context;
-import android.content.Intent;
-
 import androidx.annotation.NonNull;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import diakonidze.marketprices.adapters.SearchListAdapter;
-import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
 import diakonidze.marketprices.util.NetService;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
@@ -37,7 +34,7 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
     NetService ns;
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("filter_text", searchView.getQuery().toString());
     }

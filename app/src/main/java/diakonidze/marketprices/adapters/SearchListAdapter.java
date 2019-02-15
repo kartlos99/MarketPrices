@@ -2,6 +2,8 @@ package diakonidze.marketprices.adapters;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import diakonidze.marketprices.R;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.RealProduct;
@@ -42,8 +45,8 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
                         new int[]{}
                 },
                 new int[]{
-                        context.getResources().getColor(R.color.colorAccent),
-                        context.getResources().getColor(R.color.colorPrimary)
+                        Color.RED,
+                        Color.GREEN
                 }
         );
         colorList2 = new ColorStateList(
@@ -52,8 +55,8 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
                         new int[]{}
                 },
                 new int[]{
-                        context.getResources().getColor(R.color.colorAccent),
-                        context.getResources().getColor(R.color.colorRemoveIcon)
+                        Color.RED,
+                        Color.GRAY
                 }
         );
     }
@@ -186,10 +189,14 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
     private void setInMyListIndicator(ImageView imageView, Boolean isInBasket){
         if (isInBasket){
             imageView.setImageResource(R.drawable.ic_remove_shopping_24dp);
-            imageView.setImageTintList(colorList2);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                imageView.setImageTintList(colorList2);
+            }
         }else {
             imageView.setImageResource(R.drawable.ic_add_shopping_24dp);
-            imageView.setImageTintList(colorList1);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                imageView.setImageTintList(colorList1);
+            }
         }
     }
 
