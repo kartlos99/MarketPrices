@@ -48,7 +48,7 @@ public class GlobalConstants {
     public static final String GET_SEARCH_RESULT = HOST_URL + "get_search_result.php";
 
     public static Boolean COMPLITE_INITIAL_DOWNLOADS = false;
-
+    public static RealProduct LAST_SCANED_RPROD;
 
     public static List<Product> PRODUCT_LIST;
     public static List<Paramiter> PARAMITERS;
@@ -59,7 +59,7 @@ public class GlobalConstants {
 
     public static List<RealProduct> MY_SHOPING_LIST = new ArrayList<>();
 
-    public static HashMap<String, Paramiter> PARAMIERS_HASH;
+    public static HashMap<String, Paramiter> PARAMITERS_HASH;
     public static HashMap<String, Market> MARKETS_HASH;
 
     public static void showtext(Context context, String text) {

@@ -1,20 +1,5 @@
 package diakonidze.marketprices;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.core.content.FileProvider;
-import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
-import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
-import diakonidze.marketprices.customViews.ParamInputView;
-import diakonidze.marketprices.models.Market;
-import diakonidze.marketprices.models.Product;
-import diakonidze.marketprices.models.RealProduct;
-import diakonidze.marketprices.util.GlobalConstants;
-import diakonidze.marketprices.util.NetService;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,6 +19,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -45,8 +32,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.squareup.picasso.Picasso;
 
-import diakonidze.marketprices.R;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -54,12 +39,31 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.content.FileProvider;
+import diakonidze.marketprices.adapters.AutoCompliteMarketAdapter;
+import diakonidze.marketprices.adapters.AutoCompliteProductAdapter;
+import diakonidze.marketprices.customViews.ParamInputView;
+import diakonidze.marketprices.models.Brand;
+import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.Paramiter;
+import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.RealProduct;
+import diakonidze.marketprices.util.GlobalConstants;
+import diakonidze.marketprices.util.Keys;
+import diakonidze.marketprices.util.NetService;
+
 public class AddActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
     private static final String TAG = "AddActivity";
     private static final int CHOOSE_IMG_REQUEST = 902;
     private static final int TAKE_IMG_REQUEST = 903;
     private static final int MAX_IMAGE_SIZE = 800;
+    private static final int REQUEST_CODE_QR_SCAN = 801;
 
     // layout elements - widgets
     private AutoCompleteTextView inputProduct;
@@ -72,6 +76,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private TextInputEditText etMessage;
     private AppCompatImageButton btnChooseImage, btnTakeImage;
     private ImageView imgPrRealImage;
+    private TextView tvQrcode;
 
 
     // vars
@@ -87,6 +92,9 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private String pictureImagePath = "";
     private String mCurrentPhotoPath = "";
     private int lastPhotoImportOper = 0;
+    private String qrCode;
+
+    private NetService ns;
 
     @Override
     protected void onResume() {
@@ -96,7 +104,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             inputProduct.setAdapter(productAdapter);
         }
         if (GlobalConstants.MARKETS != null) {
-            AutoCompliteMarketAdapter marketAdapter = new AutoCompliteMarketAdapter(mContext, new ArrayList<Market>(GlobalConstants.MARKETS));
+            AutoCompliteMarketAdapter marketAdapter = new AutoCompliteMarketAdapter(mContext, new ArrayList<>(GlobalConstants.MARKETS));
             inputMarket.setAdapter(marketAdapter);
         }
         hideKeyboard();
@@ -105,6 +113,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Log.d(TAG, " RealPR_________________ SAVE : " + newRealProduct.toString());
         outState.putSerializable("realPR", newRealProduct);
         outState.putParcelable("image_path_uri", imagePath);
         outState.putString("image_path_str", mCurrentPhotoPath);
@@ -120,19 +129,12 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         if (savedInstanceState != null) {
             // recreate moxda
             newRealProduct = (RealProduct) savedInstanceState.getSerializable("realPR");
-            if (GlobalConstants.PRODUCT_LIST != null) {
-                Product product;
-                for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
-                    if (newRealProduct.getProductID() == GlobalConstants.PRODUCT_LIST.get(i).getId()) {
-                        product = GlobalConstants.PRODUCT_LIST.get(i);
-                        afterProductSelected(product);
-                        break;
-                    }
-                }
+            Log.d(TAG, " RealPR_________________ OPEN : " + newRealProduct.toString());
+            if (newRealProduct != null) {
+                showRProduct(newRealProduct);
+                etPrice.setText(String.valueOf(newRealProduct.getPrice()));
+                etMessage.setText(newRealProduct.getComment());
             }
-            Chip chip = chipGroup.findViewWithTag(newRealProduct.getPackingID());
-            if (chip != null)
-                chip.setChecked(true);
 
             lastPhotoImportOper = savedInstanceState.getInt("img_op");
             if (lastPhotoImportOper == CHOOSE_IMG_REQUEST) {
@@ -145,7 +147,6 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
                 if (mCurrentPhotoPath != null)
                     setPic();
             }
-
         } else {
             newRealProduct = new RealProduct();
         }
@@ -175,20 +176,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Market market = (Market) inputMarket.getAdapter().getItem(position);
-                Log.d(TAG, " marketID: " + market.getId());
-                newRealProduct.setMarketID(market.getId());
-
-                ImageView imageView = findViewById(R.id.img_market_logo);
-
-                if (market.getLogo().isEmpty()) {
-                    imageView.setImageResource(R.drawable.ic_no_image);
-                } else {
-                    Log.d("IMAGE", market.getLogo());
-                    Picasso.get()
-                            .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
-                            .into(imageView);
-
-                }
+                setMarket(market);
             }
         });
 
@@ -204,10 +192,10 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 hideKeyboard();
-                for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
-                    if (GlobalConstants.BRANDS.get(i).getBrandName().equals(inputBrand.getAdapter().getItem(position).toString())) {
-                        newRealProduct.setBrandID(GlobalConstants.BRANDS.get(i).getId());
-                    }
+                String brName = inputBrand.getAdapter().getItem(position).toString();
+                Brand brand = checkBrandInput(brName);
+                if (brand != null){
+                    newRealProduct.setBrandID(brand.getId());
                 }
             }
         });
@@ -215,14 +203,83 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                validateProduct = checkProductInput(inputProduct.getText().toString());
-                validateMarket = checkMarketInput(inputMarket.getText().toString());
-                validateBrand = checkBrandInput(inputBrand.getText().toString());
+                validateProduct = checkProductInput(inputProduct.getText().toString()) != null ;
+                validateMarket = checkMarketInput(inputMarket.getText().toString()) != null;
+                validateBrand = checkBrandInput(inputBrand.getText().toString()) != null;
                 checkAll();
             }
         });
 
+        ImageButton imgBtnStartQR = findViewById(R.id.img_btnQrScan);
+        imgBtnStartQR.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), QrScanActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_QR_SCAN);
+            }
+        });
+
+        ImageButton btnFromReset = findViewById(R.id.imgbtn_reset_from);
+        btnFromReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                qrCode = "";
+                newRealProduct = new RealProduct();
+                formReset();
+            }
+        });
+
+        ns = new NetService(mContext);
+        ns.setCompliteListener(this);
+
         hideKeyboard();
+    }
+
+    private void setMarket(@NonNull Market market) {
+        Log.d(TAG, " marketID: ******************************" + market.getId());
+        newRealProduct.setMarketID(market.getId());
+        ImageView imageView = findViewById(R.id.img_market_logo);
+        if (market.getLogo().isEmpty()) {
+            imageView.setImageResource(R.drawable.ic_no_image);
+        } else {
+            Log.d("IMAGE", market.getLogo());
+            Picasso.get()
+                    .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
+                    .into(imageView);
+        }
+    }
+
+    private void showRProduct(RealProduct rProdToShow) {
+        Log.d(TAG, " RealPR_inshow: " + rProdToShow.toString());
+        if (GlobalConstants.PRODUCT_LIST != null) {
+            Product product;
+            for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
+                if (rProdToShow.getProductID() == GlobalConstants.PRODUCT_LIST.get(i).getId()) {
+                    product = GlobalConstants.PRODUCT_LIST.get(i);
+                    afterProductSelected(product);
+                    break;
+                }
+            }
+        }
+
+//        etPrice.setText(String.valueOf(rProdToShow.getPrice()));
+//        etMessage.setText(rProdToShow.getComment());
+
+        String[] rpValues = rProdToShow.getParamValues();
+        int[] rpParamIDs = rProdToShow.getParamIDs();
+
+        for (int i = 0 ; i< rpParamIDs.length; i++){
+            Paramiter parameter = GlobalConstants.PARAMITERS_HASH.get(String.valueOf(rpParamIDs[i]));
+            if (parameter != null){
+                ParamInputView paramInputView = paramConteiner.findViewWithTag(parameter.getCode());
+                EditText etParamVal = paramInputView.findViewById(R.id.et_param_value);
+                etParamVal.setText(rpValues[i]);
+            }
+        }
+
+        Chip chip = chipGroup.findViewWithTag(rProdToShow.getPackingID());
+        if (chip != null)
+            chip.setChecked(true);
     }
 
     private void afterProductSelected(Product product) {
@@ -306,7 +363,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         Log.d(TAG, " ახალი ბრანდი");
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("ახალი ბრანდი/მწარმოებელი");
-        builder.setMessage("დაემატოს \'" + inputBrand.getText().toString() + "\' როგორც ახალი ბრენდი?")
+        builder.setMessage("დაემატოს \' " + inputBrand.getText().toString() + " \' როგორც ახალი ბრენდი?")
                 .setPositiveButton("დიახ", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -429,31 +486,31 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         validateBrand = false;
     }
 
-    private boolean checkProductInput(String inputText) {
+    private Product checkProductInput(String inputText) {
         for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
             if (GlobalConstants.PRODUCT_LIST.get(i).getName().equals(inputText)) {
-                return true;
+                return GlobalConstants.PRODUCT_LIST.get(i);
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean checkMarketInput(String inputText) {
+    private Market checkMarketInput(String inputText) {
         for (int i = 0; i < GlobalConstants.MARKETS.size(); i++) {
             if (GlobalConstants.MARKETS.get(i).toString().equals(inputText)) {
-                return true;
+                return GlobalConstants.MARKETS.get(i);
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean checkBrandInput(String inputText) {
+    private Brand checkBrandInput(String inputText) {
         for (int i = 0; i < GlobalConstants.BRANDS.size(); i++) {
             if (GlobalConstants.BRANDS.get(i).getBrandName().equals(inputText)) {
-                return true;
+                return GlobalConstants.BRANDS.get(i);
             }
         }
-        return false;
+        return null;
     }
 
     private void init_components() {
@@ -504,6 +561,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         btnChooseImage = findViewById(R.id.btn_choose_image);
         btnTakeImage = findViewById(R.id.btn_take_image);
         imgPrRealImage = findViewById(R.id.img_prod_real_image);
+        tvQrcode = findViewById(R.id.tv_qr_code);
 
         btnChooseImage.setOnClickListener(chooseImageListener);
         btnTakeImage.setOnClickListener(takeImageListener);
@@ -521,7 +579,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     };
 
     private View.OnClickListener takeImageListener = new View.OnClickListener() {
-//        @SuppressLint("WrongConstant")
+        //        @SuppressLint("WrongConstant")
         @Override
         public void onClick(View v) {
             if (hasCamera()) {
@@ -592,7 +650,16 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             Log.d(TAG, "- Take Image Result -");
             setPic();
         }
+
+        if (requestCode == REQUEST_CODE_QR_SCAN && resultCode == RESULT_OK && data != null) {
+            GlobalConstants.LAST_SCANED_RPROD = null;
+            qrCode = data.getStringExtra(Keys.QR_SCAN_RESULT);
+            tvQrcode.setText(qrCode);
+            ns.getSearchedProducts(null, qrCode);
+            Log.d(TAG, "- QRcode - " + qrCode);
+        }
     }
+
 
     private void loadPrImageFromPath(Uri path) {
         try {
@@ -655,10 +722,27 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     }
 
     @Override
-    public void onComplite() {
-        GlobalConstants.showtext(mContext, "ჩაწერილია!");
-        Log.d(TAG, "OnComplite shemovida");
-        formReset();
+    public void onComplite(String key) {
+        if (key.equals(Keys.INS_REAL_PROD)) {
+            GlobalConstants.showtext(mContext, "ჩაწერილია!");
+            Log.d(TAG, "OnComplite shemovida");
+            formReset();
+        }
+        if (key.equals(Keys.PROD_SEARCH_QR) && GlobalConstants.LAST_SCANED_RPROD != null) {
+            newRealProduct = GlobalConstants.LAST_SCANED_RPROD;
+/*
+პროდუქტის შტრიხ კოდზე არ დევს ინფორმაცია მაღაზიის შესახებ.
+უბრალოდ ამ მაღაზიაში იპოვა, ჩვენს ბაზაში
+            Market market = GlobalConstants.MARKETS_HASH.get(String.valueOf(newRealProduct.getMarketID()));
+            if (market != null) {
+                setMarket(market);
+                inputMarket.setText(market.toString());
+            }
+*/
+            inputBrand.setText(newRealProduct.getBrandName());
+            showRProduct(newRealProduct);
+        }
+
     }
 
     private void formReset() {
@@ -677,5 +761,6 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
         imagePr.setImageResource(R.drawable.ic_no_image);
         TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
         tViewSelectedName.setText("");
+        tvQrcode.setText("");
     }
 }

@@ -78,9 +78,9 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
         String paramFull = "";
         for (int i = 0; i < product.getParamIDs().length; i++) {
             StringBuilder builder = new StringBuilder();
-            paramFull += Objects.requireNonNull(GlobalConstants.PARAMIERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getName() + " "
+            paramFull += Objects.requireNonNull(GlobalConstants.PARAMITERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getName() + " "
                     + product.getParamValues()[i] + " "
-                    + Objects.requireNonNull(GlobalConstants.PARAMIERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getMeasureUnit();
+                    + Objects.requireNonNull(GlobalConstants.PARAMITERS_HASH.get(String.valueOf(product.getParamIDs()[i]))).getMeasureUnit();
             if (i < product.getParamIDs().length - 1) {
                 paramFull += "\n";
             }

@@ -21,13 +21,15 @@
 
     <TextView
         android:id="@+id/tv_prod_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
         android:text="_"
-        android:textStyle="bold"
         android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/img_open_bs"
         app:layout_constraintStart_toEndOf="@id/img_real_prod"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -69,14 +71,14 @@
 
     <TextView
         android:id="@+id/tv_rproduct_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="6dp"
         android:text="2018/12/09"
         android:textSize="10sp"
-        android:layout_marginEnd="6dp"
-        app:layout_constraintEnd_toStartOf="@id/tv_prod_price"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        app:layout_constraintEnd_toStartOf="@id/img_add_btn" />
 
     <TextView
         android:id="@+id/tv_market_name"

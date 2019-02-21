@@ -50,15 +50,15 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
         ns.setCompliteListener(this);
 
         if (savedInstanceState != null){
-            ns.getSearchedProducts(savedInstanceState.getString("filter_text"));
+            ns.getSearchedProducts(savedInstanceState.getString("filter_text"), null);
         }else {
-            ns.getSearchedProducts("");
+            ns.getSearchedProducts("", null);
         }
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                ns.getSearchedProducts(query);
+                ns.getSearchedProducts(query, null);
                 return false;
             }
 
@@ -66,7 +66,7 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
             public boolean onQueryTextChange(String newText) {
                 Log.d(TAG, " onChange: " + newText);
                 if (newText.length() > 1 || newText.isEmpty())
-                    ns.getSearchedProducts(newText);
+                    ns.getSearchedProducts(newText, null);
                 return false;
             }
         });
@@ -114,7 +114,7 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
     }
 
     @Override
-    public void onComplite() {
+    public void onComplite(String key) {
         // damtavrda dzebnis resultatebis chamotvirtva da gamogvaqvs
         Log.d(TAG, " resul size = " + GlobalConstants.SEARCH_RESULT_LIST.size());
 

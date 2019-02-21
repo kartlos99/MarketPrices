@@ -18,4 +18,6 @@
     <string name="country">ქვეყანა</string>
     <string name="enter_market_name"><![CDATA[მაღაზია & მისამართი]]></string>
     <string name="image">ფოტო</string>
+    <string name="start_qr_scaner">start QR scaner</string>
+    <string name="load_qr_from_image">load QR from image</string>
 </resources>

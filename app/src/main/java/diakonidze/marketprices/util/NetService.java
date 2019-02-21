@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.annotation.Nullable;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
@@ -37,14 +38,21 @@ public class NetService {
         queue = Volley.newRequestQueue(netContext);
     }
 
-    public void getSearchedProducts(String query) {
-        String url = GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query;
-        Log.d(TAG, "search_URL: "+url);
+    public void getSearchedProducts(@Nullable String query, @Nullable final String qrcode) {
+        String url;
+        if (qrcode != null) {
+            url = GlobalConstants.GET_SEARCH_RESULT + "?qrcode=" + qrcode;
+        } else {
+            url = GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query;
+        }
+        Log.d(TAG, "search_URL: " + url);
+
         JsonArrayRequest prodSearchRequest = new JsonArrayRequest(url
                 , new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
+                if (qrcode == null)
+                    GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
 //                Log.d(TAG, "resp_size = " + response.length());
                 for (int i = 0; i < response.length(); i++) {
                     RealProduct realProduct = new RealProduct();
@@ -93,21 +101,31 @@ public class NetService {
                         e.printStackTrace();
                     }
 
-                    for (int ii = 0; ii < GlobalConstants.MY_SHOPING_LIST.size(); ii++){
-                        if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(ii).getId()){
+                    for (int ii = 0; ii < GlobalConstants.MY_SHOPING_LIST.size(); ii++) {
+                        if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(ii).getId()) {
                             realProduct.setInMyList(true);
                             break;
                         }
                     }
 
                     Log.d(TAG, realProduct.toString());
-                    GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
+                    if (qrcode == null) {
+                        GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
+                    } else {
+                        GlobalConstants.LAST_SCANED_RPROD = realProduct;
+                    }
                 }
 
-                Log.d(TAG, "SRS = " + GlobalConstants.SEARCH_RESULT_LIST.size());
-                compliteListener.onComplite();
+                if (qrcode == null) {
+                    Log.d(TAG, "SRS = " + GlobalConstants.SEARCH_RESULT_LIST.size());
+                    compliteListener.onComplite(Keys.PROD_SEARCH);
+                } else {
+                    compliteListener.onComplite(Keys.PROD_SEARCH_QR);
+                }
+
             }
-        }, new Response.ErrorListener() {
+        }, new Response.ErrorListener()
+        {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d(TAG, " GET_Searched_List - come : error");
@@ -174,15 +192,13 @@ public class NetService {
                                 product.setImage(item.getString("p_img"));
                             } else if (!item.isNull("pt_img")) {
                                 product.setImage(item.getString("pt_img"));
-                            } else if (!item.isNull("pg_img")) {
-                                product.setImage(item.getString("pg_img"));
                             } else {
                                 product.setImage("");
                             }
 
                             GlobalConstants.PRODUCT_LIST.add(product);
-                            Log.d(TAG, "item: " + item.toString());
-                            Log.d(TAG, "prod: " + product.allToString());
+//                            Log.d(TAG, "item: " + item.toString());
+//                            Log.d(TAG, "prod: " + product.allToString());
                         }
 
 
@@ -193,7 +209,7 @@ public class NetService {
                     }
                 }
 
-                GlobalConstants.PARAMIERS_HASH = new HashMap<>();
+                GlobalConstants.PARAMITERS_HASH = new HashMap<>();
                 for (int i = 0; i < jsonParams.length(); i++) {
                     try {
                         JSONObject item = jsonParams.getJSONObject(i);
@@ -203,7 +219,7 @@ public class NetService {
                                 , item.getString("measureUnit")
                         );
                         GlobalConstants.PARAMITERS.add(paramiter);
-                        GlobalConstants.PARAMIERS_HASH.put(item.getString("id"), paramiter);
+                        GlobalConstants.PARAMITERS_HASH.put(item.getString("id"), paramiter);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -245,7 +261,7 @@ public class NetService {
                                 item.getInt("id"),
                                 item.getString("marketName")
                         );
-                        if (!item.isNull("logo")){
+                        if (!item.isNull("logo")) {
                             market.setLogo(item.getString("logo"));
                         }
                         market.setSn(item.getString("sn"));
@@ -284,9 +300,9 @@ public class NetService {
         final HashMap<String, String> params = new HashMap<String, String>();
 
         params.put("prod_id", String.valueOf(realProduct.getProductID()));
-        if (realProduct.getProductID() == 0){
+        if (realProduct.getProductID() == 0) {
             params.put("prod_name", realProduct.getProduct_name());
-        }else {
+        } else {
             params.put("packing_id", String.valueOf(realProduct.getPackingID()));
             for (int i = 0; i < realProduct.getParamIDs().length; i++) {
                 params.put("paramIDs[" + i + "]", String.valueOf(realProduct.getParamIDs()[i]));
@@ -294,16 +310,16 @@ public class NetService {
             }
         }
         params.put("market_id", String.valueOf(realProduct.getMarketID()));
-        if (realProduct.getMarketID() == 0){
+        if (realProduct.getMarketID() == 0) {
             params.put("market_name", realProduct.getMarketName());
         }
         params.put("brand_id", String.valueOf(realProduct.getBrandID()));
-        if (realProduct.getBrandID() == 0){
+        if (realProduct.getBrandID() == 0) {
             params.put("brand_name", realProduct.getBrandName());
         }
         params.put("price", String.valueOf(realProduct.getPrice()));
         params.put("comment", realProduct.getComment());
-        if (imageStr != null && !imageStr.isEmpty()){
+        if (imageStr != null && !imageStr.isEmpty()) {
             params.put("image", imageStr);
         }
 
@@ -320,7 +336,7 @@ public class NetService {
                         GlobalConstants.showtext(netContext, "ჩაწერა ვერ მოხერხდა, server Error:\n" + error);
                     } else {
                         // aq unda gavaketot rame roca namdvilad vicit rom chaiwera
-                        compliteListener.onComplite();
+                        compliteListener.onComplite(Keys.INS_REAL_PROD);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -345,9 +361,10 @@ public class NetService {
     }
 
     // am inerfaiss viyenebt imistvis rom Activitis gavagebinot
-    // ragac procesis dasruleba, da iq ragac operaciebi gavaketot
+// ragac procesis dasruleba, da iq ragac operaciebi gavaketot
     public interface taskCompliteListener {
-        void onComplite();
+        void onComplite(String servCode);
+
     }
 
     private taskCompliteListener compliteListener = null;

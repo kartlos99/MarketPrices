@@ -5,29 +5,39 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
+import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.io.IOException;
+import java.net.URI;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import diakonidze.marketprices.util.Keys;
 
 
 public class QrScanActivity extends AppCompatActivity {
 
     private Context mContext = QrScanActivity.this;
-    private String TAG = "mainActivity";
+    private String TAG = "QrScanActivity";
+    private static final int CHOOSE_IMG_REQUEST = 902;
 
     CameraSource cameraSource;
     SurfaceView surfaceView;
@@ -87,18 +97,57 @@ public class QrScanActivity extends AppCompatActivity {
 
                 final SparseArray<Barcode> qrCodes = detections.getDetectedItems();
 
-                if (qrCodes.size() > 0) {
-//                    Log.d(TAG, "set_proc_Detect " + qrCodes.size());
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("scan_result", qrCodes.valueAt(0).displayValue);
-                    setResult(Activity.RESULT_OK, resultIntent);
-                    finish();
+                checkBarCodes(qrCodes);
 
-                }
             }
         });
 
+        /**
+         * suratidan qr codis wakitxva
+         */
 
+        ImageView btnQrFromFile = findViewById(R.id.img_btnFromFile);
+        btnQrFromFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "choose Qr from image cliked");
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(intent, CHOOSE_IMG_REQUEST);
+            }
+        });
+
+    }
+
+    private void checkBarCodes(SparseArray<Barcode> barcodes) {
+        if (barcodes.size() > 0) {
+            Log.d(TAG, "checkBarCodes size: " + barcodes.size());
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(Keys.QR_SCAN_RESULT, barcodes.valueAt(0).displayValue);
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish();
+        } else {
+            textViewQR.setText("არ იძებნება");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CHOOSE_IMG_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri imagePath = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imagePath);
+                Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+                SparseArray<Barcode> barcodes = barcodeDetector.detect(frame);
+
+                checkBarCodes(barcodes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

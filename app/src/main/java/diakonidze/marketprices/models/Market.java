@@ -1,9 +1,9 @@
 package diakonidze.marketprices.models;
 
 public class Market {
-    int id;
-    String marketName, sn, logo, image, address, comment;
-    Double locationX, locationY;
+    private int id;
+    private String marketName, sn, logo, image, address, comment;
+    private Double locationX, locationY;
 
     @Override
     public String toString() {
