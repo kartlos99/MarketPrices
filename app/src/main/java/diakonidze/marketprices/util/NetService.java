@@ -51,8 +51,8 @@ public class NetService {
                 , new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                if (qrcode == null)
-                    GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
+//                if (qrcode == null)
+                GlobalConstants.SEARCH_RESULT_LIST = new ArrayList<>();
 //                Log.d(TAG, "resp_size = " + response.length());
                 for (int i = 0; i < response.length(); i++) {
                     RealProduct realProduct = new RealProduct();
@@ -109,23 +109,23 @@ public class NetService {
                     }
 
                     Log.d(TAG, realProduct.toString());
-                    if (qrcode == null) {
-                        GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
-                    } else {
-                        GlobalConstants.LAST_SCANED_RPROD = realProduct;
-                    }
+//                    if (qrcode == null) {
+                    GlobalConstants.SEARCH_RESULT_LIST.add(realProduct);
+//                    } else {
+//                        GlobalConstants.LAST_SCANED_RPROD = realProduct;
+//                    }
                 }
 
-                if (qrcode == null) {
-                    Log.d(TAG, "SRS = " + GlobalConstants.SEARCH_RESULT_LIST.size());
-                    compliteListener.onComplite(Keys.PROD_SEARCH);
-                } else {
+                Log.d(TAG, "SRS = " + GlobalConstants.SEARCH_RESULT_LIST.size());
+                if (qrcode != null && GlobalConstants.SEARCH_RESULT_LIST.size() > 0) {
+                    GlobalConstants.LAST_SCANED_RPROD = GlobalConstants.SEARCH_RESULT_LIST.get(0);
                     compliteListener.onComplite(Keys.PROD_SEARCH_QR);
+                } else {
+                    compliteListener.onComplite(Keys.PROD_SEARCH);
                 }
 
             }
-        }, new Response.ErrorListener()
-        {
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d(TAG, " GET_Searched_List - come : error");

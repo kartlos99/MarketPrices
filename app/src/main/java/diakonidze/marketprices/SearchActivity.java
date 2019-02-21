@@ -1,12 +1,14 @@
 package diakonidze.marketprices;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import diakonidze.marketprices.adapters.SearchListAdapter;
 import diakonidze.marketprices.util.GlobalConstants;
+import diakonidze.marketprices.util.Keys;
 import diakonidze.marketprices.util.NetService;
 
 import android.content.Context;
@@ -15,6 +17,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -22,6 +27,7 @@ import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity implements NetService.taskCompliteListener {
 
+    private static final int REQUEST_CODE_QR_SCAN = 201;
     Context mContext = SearchActivity.this;
     private static final String TAG = "SearchActivity";
 
@@ -68,6 +74,15 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
                 if (newText.length() > 1 || newText.isEmpty())
                     ns.getSearchedProducts(newText, null);
                 return false;
+            }
+        });
+
+        ImageButton btnQrSearch = findViewById(R.id.imgbtn_search_vs_qr);
+        btnQrSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), QrScanActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_QR_SCAN);
             }
         });
 
@@ -124,5 +139,19 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
 
         adapter = new SearchListAdapter(mContext, new ArrayList<>(GlobalConstants.SEARCH_RESULT_LIST));
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_QR_SCAN && resultCode == RESULT_OK && data != null) {
+            String qrCode = data.getStringExtra(Keys.QR_SCAN_RESULT);
+            Log.d(TAG, "- QRcode - " + qrCode);
+            TextView tv_info = findViewById(R.id.tv_filters);
+            tv_info.setText("QR: " + qrCode);
+            ns.getSearchedProducts(null, qrCode);
+
+        }
     }
 }
