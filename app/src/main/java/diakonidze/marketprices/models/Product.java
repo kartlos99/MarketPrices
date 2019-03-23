@@ -1,51 +1,56 @@
 package diakonidze.marketprices.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Arrays;
 
-public class Product {
-    private int id, typeID;
-    private String name, typeName, groupName;
-    private String image;
-    private int[] params;
-    private int[] packs;
+import diakonidze.marketprices.util.GlobalConstants;
+
+public class Product implements Serializable {
+    private int id, typeID, packID = 10, brandID = 9;
+    private String name = "", typeName, groupName, qrCode = "";
+    private String image = "a";
+    private int[] paramIDs;
+    private String[] paramValues, paramNames;
+
 
     public Product(int id, String name) {
         this.id = id;
         this.name = name;
+        paramIDs = new int[0];
+        paramValues = new String[0];
     }
-
 
     public String allToString() {
         return "Product{" +
                 "id=" + id +
                 ", typeID=" + typeID +
+                ", packID=" + packID +
+                ", brandID=" + brandID +
                 ", name='" + name + '\'' +
                 ", typeName='" + typeName + '\'' +
-                ", groupName='" + groupName + '\'' +
+                ", qrCode='" + qrCode + '\'' +
                 ", image='" + image + '\'' +
+                ", paramIDs=" + Arrays.toString(paramIDs) +
+                ", paramValues=" + Arrays.toString(paramValues) +
+                ", paramNames=" + Arrays.toString(paramNames) +
                 '}';
     }
 
-    public int[] getParams() {
-        return params;
+    public int[] getParamIDs() {
+        return paramIDs;
     }
 
-    public void setParams(int[] params) {
-        this.params = params;
-    }
-
-    public int[] getPacks() {
-        return packs;
-    }
-
-    public void setPacks(int[] packs) {
-        this.packs = packs;
+    public void setParamIDs(int[] paramIDs) {
+        this.paramIDs = paramIDs;
     }
 
     @Override
     public String toString() {
-        return name;
+        Brand brand = GlobalConstants.findBrandByID(brandID);
+        if (brand != null){
+            return name + ", " + brand.getBrandName();
+        }
+        return name ;
     }
 
     public int getId() {
@@ -96,4 +101,43 @@ public class Product {
         this.image = image;
     }
 
+    public int getPackID() {
+        return packID;
+    }
+
+    public void setPackID(int packID) {
+        this.packID = packID;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
+
+    public String[] getParamValues() {
+        return paramValues;
+    }
+
+    public void setParamValues(String[] paramValues) {
+        this.paramValues = paramValues;
+    }
+
+    public String[] getParamNames() {
+        return paramNames;
+    }
+
+    public void setParamNames(String[] paramNames) {
+        this.paramNames = paramNames;
+    }
+
+    public int getBrandID() {
+        return brandID;
+    }
+
+    public void setBrandID(int brandID) {
+        this.brandID = brandID;
+    }
 }

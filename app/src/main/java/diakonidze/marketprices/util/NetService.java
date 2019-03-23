@@ -3,7 +3,6 @@ package diakonidze.marketprices.util;
 import android.content.Context;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -17,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +26,7 @@ import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.ProductType;
 import diakonidze.marketprices.models.RealProduct;
 
 public class NetService {
@@ -64,31 +65,31 @@ public class NetService {
                         realProduct.setProductID(jsonProduct.getInt("productID"));
                         realProduct.setMarketID(jsonProduct.getInt("marketID"));
                         realProduct.setPrice(Float.valueOf(jsonProduct.getString("price")));
-                        realProduct.setBrandID(jsonProduct.getInt("brandID"));
-                        realProduct.setPackingID(jsonProduct.getInt("packingID"));
-                        realProduct.setComment(jsonProduct.getString("comment"));
+//                        realProduct.setBrandID(jsonProduct.getInt("brandID"));
+//                        realProduct.setComment(jsonProduct.getString("comment"));
                         realProduct.setPrAddDate(jsonProduct.getString("createDate").split(" ")[0]);
-                        realProduct.setProduct_name(jsonProduct.getString("product_name"));
+//                        realProduct.setProduct_name(jsonProduct.getString("product_name"));
                         realProduct.setMarketName(jsonProduct.getString("marketName"));
-                        realProduct.setBrandName(jsonProduct.getString("brandName"));
-                        realProduct.setPacking(jsonProduct.getString("packing"));
+//                        realProduct.setBrandName(jsonProduct.getString("brandName"));
+//                        realProduct.setPacking(jsonProduct.getString("packing"));
 
-                        JSONArray ja_paramIDs = jsonProduct.getJSONArray("paramIDs");
-                        JSONArray ja_paramVal = jsonProduct.getJSONArray("pVal");
-                        JSONArray ja_paramName = jsonProduct.getJSONArray("pName");
-                        int[] param = new int[ja_paramIDs.length()];
-                        String[] paramVal = new String[ja_paramIDs.length()];
-                        String[] paramName = new String[ja_paramIDs.length()];
+//                        JSONArray ja_paramIDs = jsonProduct.getJSONArray("paramIDs");
+//                        JSONArray ja_paramVal = jsonProduct.getJSONArray("pVal");
+//                        JSONArray ja_paramName = jsonProduct.getJSONArray("pName");
+//                        int[] param = new int[ja_paramIDs.length()];
+//                        String[] paramVal = new String[ja_paramIDs.length()];
+//                        String[] paramName = new String[ja_paramIDs.length()];
+//
+//                        for (int j = 0; j < ja_paramIDs.length(); j++) {
+//                            param[j] = ja_paramIDs.getInt(j);
+//                            paramVal[j] = ja_paramVal.getString(j);
+//                            paramName[j] = ja_paramName.getString(j);
+//                        }
+//                        realProduct.setParamIDs(param);
+//                        realProduct.setParamValues(paramVal);
+//                        realProduct.setParamNames(paramName);
 
-                        for (int j = 0; j < ja_paramIDs.length(); j++) {
-                            param[j] = ja_paramIDs.getInt(j);
-                            paramVal[j] = ja_paramVal.getString(j);
-                            paramName[j] = ja_paramName.getString(j);
-                        }
-                        realProduct.setParamIDs(param);
-                        realProduct.setParamValues(paramVal);
-                        realProduct.setParamNames(paramName);
-
+//                        Log.d(TAG, "*************************************************************111111");
                         if (!jsonProduct.isNull("image")) {
                             realProduct.setImage(jsonProduct.getString("image"));
                         } else if (!jsonProduct.isNull("p_image")) {
@@ -107,6 +108,8 @@ public class NetService {
                             break;
                         }
                     }
+
+                    realProduct.setProduct(findProductByID(realProduct.getProductID()));
 
                     Log.d(TAG, realProduct.toString());
 //                    if (qrcode == null) {
@@ -137,6 +140,16 @@ public class NetService {
 
     }
 
+    private Product findProductByID(int productID) {
+        for (int i = 0 ; i < GlobalConstants.PRODUCT_LIST.size(); i++){
+            if (productID == GlobalConstants.PRODUCT_LIST.get(i).getId()){
+                return GlobalConstants.PRODUCT_LIST.get(i);
+            }
+        }
+        Log.d(TAG, "prod am ID -it ver moiZebna - " + productID);
+        return null;
+    }
+
     // *****************************  tavdapirveli monacemebis wamogeba  **************************
     public void fill_prodList() {
 
@@ -150,12 +163,14 @@ public class NetService {
                 GlobalConstants.PACKS = new ArrayList<>();
                 GlobalConstants.BRANDS = new ArrayList<>();
                 GlobalConstants.MARKETS = new ArrayList<>();
+                GlobalConstants.PRODUCT_TYPES = new ArrayList<>();
 
                 JSONArray jsonProducts = new JSONArray();
                 JSONArray jsonParams = new JSONArray();
                 JSONArray jsonPacking = new JSONArray();
                 JSONArray jsonBrands = new JSONArray();
                 JSONArray jsonMarkets = new JSONArray();
+                JSONArray jsonPrTypes = new JSONArray();
 
                 try {
                     jsonProducts = response.getJSONArray(0);
@@ -163,6 +178,7 @@ public class NetService {
                     jsonPacking = response.getJSONArray(2);
                     jsonBrands = response.getJSONArray(3);
                     jsonMarkets = response.getJSONArray(4);
+                    jsonPrTypes = response.getJSONArray(5);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -174,24 +190,24 @@ public class NetService {
                         if (item != null) {
                             Product product = new Product(item.getInt("id"), item.getString("name"));
 
-                            JSONArray ja_pk = item.getJSONArray("packs");
-                            int[] pk = new int[ja_pk.length()];
-                            for (int j = 0; j < ja_pk.length(); j++) {
-                                pk[j] = ja_pk.getInt(j);
-                            }
-                            product.setPacks(pk);
+                            product.setPackID(item.getInt("packID"));
+                            product.setQrCode(item.getString("qr"));
+                            product.setTypeID(item.getInt("typeID"));
+                            product.setBrandID(item.getInt("brID"));
 
-                            JSONArray ja_param = item.getJSONArray("param");
-                            int[] param = new int[ja_param.length()];
-                            for (int j = 0; j < ja_param.length(); j++) {
-                                param[j] = ja_param.getInt(j);
+                            JSONArray jaParamIDs = item.getJSONArray("pID");
+                            JSONArray jaParamValues = item.getJSONArray("pVal");
+                            int[] paramIDs = new int[jaParamIDs.length()];
+                            String[] paramValues = new String[jaParamIDs.length()];
+                            for (int j = 0; j < jaParamIDs.length(); j++) {
+                                paramIDs[j] = jaParamIDs.getInt(j);
+                                paramValues[j] = jaParamValues.getString(j);
                             }
-                            product.setParams(param);
+                            product.setParamIDs(paramIDs);
+                            product.setParamValues(paramValues);
 
                             if (!item.isNull("p_img")) {
                                 product.setImage(item.getString("p_img"));
-                            } else if (!item.isNull("pt_img")) {
-                                product.setImage(item.getString("pt_img"));
                             } else {
                                 product.setImage("");
                             }
@@ -225,6 +241,7 @@ public class NetService {
                     }
                 }
 
+                GlobalConstants.PACKS_HASH = new HashMap<>();
                 for (int i = 0; i < jsonPacking.length(); i++) {
                     try {
                         JSONObject item = jsonPacking.getJSONObject(i);
@@ -234,6 +251,7 @@ public class NetService {
                                 item.getString("valueText")
                         );
                         GlobalConstants.PACKS.add(packing);
+                        GlobalConstants.PACKS_HASH.put(item.getString("id"), packing);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -277,6 +295,33 @@ public class NetService {
                     }
                 }
 
+                for (int i = 0; i < jsonPrTypes.length(); i++) {
+                    try {
+                        JSONObject item = jsonPrTypes.getJSONObject(i);
+                        ProductType productType = new ProductType(item.getInt("id"));
+                        productType.setCode(item.getString("code"));
+                        productType.setName(item.getString("name"));
+                        productType.setImage(item.getString("image"));
+
+                        JSONArray jaPacks = item.getJSONArray("all_pack");
+                        int[] packs = new int[jaPacks.length()];
+                        for (int j = 0; j < jaPacks.length(); j++) {
+                            packs[j] = jaPacks.getInt(j);
+                        }
+                        JSONArray jaParam = item.getJSONArray("all_param");
+                        int[] params = new int[jaParam.length()];
+                        for (int j = 0; j < jaParam.length(); j++) {
+                            params[j] = jaParam.getInt(j);
+                        }
+                        productType.setAll_pack(packs);
+                        productType.setAll_param(params);
+
+                        GlobalConstants.PRODUCT_TYPES.add(productType);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 Log.d(TAG, " MARKETs SIZE : " + GlobalConstants.MARKETS_HASH.size());
 
                 GlobalConstants.COMPLITE_INITIAL_DOWNLOADS = true;
@@ -287,7 +332,7 @@ public class NetService {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.d(TAG, " GET_PRODUCT_List - come : error");
-                Log.d(TAG, error.getStackTrace().toString());
+                Log.d(TAG, Arrays.toString(error.getStackTrace()));
             }
         });
 
@@ -296,33 +341,43 @@ public class NetService {
 
     // ***********************  axali realuri produqtis chawera  ********************************
     public void insertNewRealProduct(RealProduct realProduct, String imageStr) {
-
-        final HashMap<String, String> params = new HashMap<String, String>();
+        Log.d(TAG, " ins_new_rProd!!!");
+        final HashMap<String, String> params = new HashMap<>();
 
         params.put("prod_id", String.valueOf(realProduct.getProductID()));
         if (realProduct.getProductID() == 0) {
-            params.put("prod_name", realProduct.getProduct_name());
-        } else {
-            params.put("packing_id", String.valueOf(realProduct.getPackingID()));
-            for (int i = 0; i < realProduct.getParamIDs().length; i++) {
-                params.put("paramIDs[" + i + "]", String.valueOf(realProduct.getParamIDs()[i]));
-                params.put("paramValues[" + i + "]", realProduct.getParamValues()[i]);
+            // e.i. ar vicit ra produqtia, axali emateba
+            params.put("prod_name", realProduct.getProduct().getName());
+            params.put("packing_id", String.valueOf(realProduct.getProduct().getPackID()));
+
+            for (int i = 0; i < realProduct.getProduct().getParamIDs().length; i++) {
+                params.put("paramIDs[" + i + "]", String.valueOf(realProduct.getProduct().getParamIDs()[i]));
+                params.put("paramValues[" + i + "]", realProduct.getProduct().getParamValues()[i]);
             }
+
+            params.put("brand_id", String.valueOf(realProduct.getProduct().getBrandID()));
+            if (realProduct.getProduct().getBrandID() == 0) {
+                params.put("brand_name", realProduct.getBrandName());
+            }
+            if (realProduct.getProduct().getQrCode() != null) {
+                params.put("qr", realProduct.getProduct().getQrCode());
+            }else {
+                params.put("qr", "123");
+            }
+        } else {
+            // e.i. vicit ra produqticaa
         }
         params.put("market_id", String.valueOf(realProduct.getMarketID()));
         if (realProduct.getMarketID() == 0) {
             params.put("market_name", realProduct.getMarketName());
         }
-        params.put("brand_id", String.valueOf(realProduct.getBrandID()));
-        if (realProduct.getBrandID() == 0) {
-            params.put("brand_name", realProduct.getBrandName());
-        }
+
         params.put("price", String.valueOf(realProduct.getPrice()));
         params.put("comment", realProduct.getComment());
         if (imageStr != null && !imageStr.isEmpty()) {
             params.put("image", imageStr);
         }
-
+        Log.d("URL:", GlobalConstants.INS_REAL_PROD);
         StringRequest request = new StringRequest(Request.Method.POST, GlobalConstants.INS_REAL_PROD
                 , new Response.Listener<String>() {
             @Override
@@ -333,7 +388,8 @@ public class NetService {
                     int id = jsonObject.getInt("id");
                     if (id == 0) {
                         String error = jsonObject.getString("error");
-                        GlobalConstants.showtext(netContext, "ჩაწერა ვერ მოხერხდა, server Error:\n" + error);
+                        String error1 = jsonObject.getString("error1");
+                        GlobalConstants.showtext(netContext, "ჩაწერა ვერ მოხერხდა, server Error:\n" + error + " + " + error1);
                     } else {
                         // aq unda gavaketot rame roca namdvilad vicit rom chaiwera
                         compliteListener.onComplite(Keys.INS_REAL_PROD);
@@ -351,7 +407,7 @@ public class NetService {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 return params;
             }
         };

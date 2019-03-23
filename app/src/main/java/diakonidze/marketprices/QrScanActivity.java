@@ -127,8 +127,8 @@ public class QrScanActivity extends AppCompatActivity {
             resultIntent.putExtra(Keys.QR_SCAN_RESULT, barcodes.valueAt(0).displayValue);
             setResult(Activity.RESULT_OK, resultIntent);
             finish();
-        } else {
-            textViewQR.setText("არ იძებნება");
+//        } else {
+//            textViewQR.setText("არ იძებნება");
         }
     }
 

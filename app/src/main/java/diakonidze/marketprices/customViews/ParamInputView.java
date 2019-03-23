@@ -50,6 +50,10 @@ public class ParamInputView extends LinearLayout {
         return paramValue.getText().toString();
     }
 
+    public void setParamValhint (String mnishvneloba){
+        paramValue.setHint(mnishvneloba);
+    }
+
     public View getView(){
         return this;
     }

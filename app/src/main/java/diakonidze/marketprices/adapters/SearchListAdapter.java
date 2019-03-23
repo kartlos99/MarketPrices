@@ -24,7 +24,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import diakonidze.marketprices.R;
+import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.Packing;
+import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.util.GlobalConstants;
 
@@ -71,10 +74,11 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
-        final RealProduct product = productList.get(position);
-        Log.d(TAG, "curr_Prod_in_list: " + product.toString());
+        final RealProduct realProduct = productList.get(position);
+        Product product = realProduct.getProduct();
+        Log.d(TAG, "curr_Prod_in_list: " + realProduct.toString());
 
-        holder.tv_Pname.setText(product.getProduct_name());
+        holder.tv_Pname.setText(product.getName());
         String paramFull = "";
         for (int i = 0; i < product.getParamIDs().length; i++) {
             StringBuilder builder = new StringBuilder();
@@ -86,15 +90,15 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             }
         }
         holder.tv_Pparams.setText(paramFull);
-        holder.tv_Mname.setText(product.getMarketName());
-        holder.tv_lastdate.setText(product.getPrAddDate());
-        holder.tv_Pprice.setText(String.valueOf(product.getPrice()));
+        holder.tv_Mname.setText(realProduct.getMarketName());
+        holder.tv_lastdate.setText(realProduct.getPrAddDate());
+        holder.tv_Pprice.setText(String.valueOf(realProduct.getPrice()));
 
-        if (product.getImage().isEmpty()) {
+        if (realProduct.getImage().isEmpty()) {
             holder.img_product.setImageResource(R.drawable.ic_no_image);
         } else {
             Picasso.get()
-                    .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + product.getImage())
+                    .load(GlobalConstants.HOST_URL + GlobalConstants.IMAGES_FOLDER + realProduct.getImage())
                     .resize(200, 200)
                     .centerCrop()
                     .error(R.drawable.ic_no_image)
@@ -104,9 +108,9 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
         holder.img_addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                product.setInMyList(!product.getInMyList());
-                changeMyList(product);
-                setInMyListIndicator(holder.img_addBtn, product.getInMyList());
+                realProduct.setInMyList(!realProduct.getInMyList());
+                changeMyList(realProduct);
+                setInMyListIndicator(holder.img_addBtn, realProduct.getInMyList());
             }
         });
 
@@ -132,36 +136,42 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
                 ImageView img_market = bsView.findViewById(R.id.img_bs_market);
                 final ImageView img_basket = bsView.findViewById(R.id.img_bs_basket);
 
-                Market market = GlobalConstants.MARKETS_HASH.get(String.valueOf(product.getMarketID()));
-
-                tv_prName.setText(product.getProduct_name());
+                Market market = GlobalConstants.MARKETS_HASH.get(String.valueOf(realProduct.getMarketID()));
+Log.d(TAG, "PRODUCT: " + realProduct.getProduct().toString());
+                tv_prName.setText(realProduct.getProduct().getName());
                 tv_param.setText(paramsText);
-                tv_price.setText(String.valueOf(product.getPrice()));
-                tv_date.setText(product.getPrAddDate());
+                tv_price.setText(String.valueOf(realProduct.getPrice()));
+                tv_date.setText(realProduct.getPrAddDate());
                 tv_market.setText(market.toString());
-                tv_brand.setText(product.getBrandName());
-                tv_packing.setText(product.getPacking());
+                Brand brand = GlobalConstants.findBrandByID(realProduct.getProduct().getBrandID());
+                if (brand != null) {
+                    Log.d(TAG, brand.toString());
+                    tv_brand.setText(brand.getBrandName());
+                }
+                Packing packing = GlobalConstants.PACKS_HASH.get(String.valueOf(realProduct.getProduct().getPackID()));
+                if (packing != null)
+                    tv_packing.setText(packing.getValue());
                 img_product.setImageDrawable(holder.img_product.getDrawable());
                 final CircularRevealCardView cardView = bsView.findViewById(R.id.bs_carcview);
 
-                Log.d(TAG,"market: " + market.fulltoString());
-                if (!market.getLogo().isEmpty()){
+                Log.d(TAG, "market: " + market.fulltoString());
+                if (!market.getLogo().isEmpty()) {
                     Picasso.get()
                             .load(GlobalConstants.HOST_URL + GlobalConstants.MARKET_LOGOS_FOLDER + market.getLogo())
                             .error(R.drawable.ic_no_image)
                             .into(img_market);
                 }
 
-                setInMyListIndicator(img_basket, product.getInMyList());
+                setInMyListIndicator(img_basket, realProduct.getInMyList());
                 img_basket.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        product.setInMyList(!product.getInMyList());
-                        changeMyList(product);
-                        setInMyListIndicator(holder.img_addBtn, product.getInMyList());
-                        setInMyListIndicator(img_basket, product.getInMyList());
+                        realProduct.setInMyList(!realProduct.getInMyList());
+                        changeMyList(realProduct);
+                        setInMyListIndicator(holder.img_addBtn, realProduct.getInMyList());
+                        setInMyListIndicator(img_basket, realProduct.getInMyList());
 
-                        if (product.getInMyList()){
+                        if (realProduct.getInMyList()) {
                             Animation animation = AnimationUtils.loadAnimation(context, R.anim.anim_jump_right);
                             cardView.startAnimation(animation);
                         }
@@ -171,7 +181,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
             }
         });
 
-        setInMyListIndicator(holder.img_addBtn, product.getInMyList());
+        setInMyListIndicator(holder.img_addBtn, realProduct.getInMyList());
     }
 
     private void changeMyList(RealProduct realProduct) {
@@ -186,13 +196,13 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Vi
         }
     }
 
-    private void setInMyListIndicator(ImageView imageView, Boolean isInBasket){
-        if (isInBasket){
+    private void setInMyListIndicator(ImageView imageView, Boolean isInBasket) {
+        if (isInBasket) {
             imageView.setImageResource(R.drawable.ic_remove_shopping_24dp);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 imageView.setImageTintList(colorList2);
             }
-        }else {
+        } else {
             imageView.setImageResource(R.drawable.ic_add_shopping_24dp);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 imageView.setImageTintList(colorList1);

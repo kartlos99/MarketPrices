@@ -32,12 +32,14 @@ import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.ProductType;
 import diakonidze.marketprices.models.RealProduct;
 
 public class GlobalConstants {
-    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
+//    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
 //    public static final String HOST_URL = "http://192.168.1.6/market/"; // სახში
 //    public static final String HOST_URL = "http://app.inf.ge/"; // server
+    public static final String HOST_URL = "http://apeni.ge/mk99/"; // server apeni
 
     public static final String IMAGES_FOLDER = "images/";
     public static final String MARKET_LOGOS_FOLDER = "images/market_logos/";
@@ -56,13 +58,24 @@ public class GlobalConstants {
     public static List<Brand> BRANDS;
     public static List<Market> MARKETS;
     public static List<RealProduct> SEARCH_RESULT_LIST;
+    public static List<ProductType> PRODUCT_TYPES;
 
     public static List<RealProduct> MY_SHOPING_LIST = new ArrayList<>();
 
     public static HashMap<String, Paramiter> PARAMITERS_HASH;
     public static HashMap<String, Market> MARKETS_HASH;
+    public static HashMap<String, Packing> PACKS_HASH;
 
     public static void showtext(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+    }
+
+    public static Brand findBrandByID(int brandID) {
+        for (int i = 0 ; i < BRANDS.size(); i++){
+            if (brandID == BRANDS.get(i).getId()){
+                return BRANDS.get(i);
+            }
+        }
+        return null;
     }
 }

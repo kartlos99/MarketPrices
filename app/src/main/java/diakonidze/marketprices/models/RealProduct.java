@@ -4,16 +4,20 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class RealProduct implements Serializable {
-    private int id, productID, brandID, marketID, packingID, countryID;
-    private String prAddDate, comment, product_name, marketName, brandName, packing, image ;
+    private int id, productID, brandID, marketID, addUserID;
+    private String prAddDate, comment, product_name, marketName, brandName, packing, image = "";
     private Float price;
     private int[] paramIDs;
     private String[] paramValues, paramNames;
     private Boolean isInMyList = false;
     private Boolean checked = false;
+    private Product product;
 
     public RealProduct() {
-        packingID = 0;
+        product = new Product(0, "");
+        product.setParamIDs(new int[0]);
+        product.setParamValues(new String[0]);
+        product.setParamNames(new String[0]);
     }
 
     @Override
@@ -23,8 +27,30 @@ public class RealProduct implements Serializable {
                 ", productID=" + productID +
                 ", brandID=" + brandID +
                 ", marketID=" + marketID +
-                ", packingID=" + packingID +
-                ", countryID=" + countryID +
+                ", addUserID=" + addUserID +
+                ", prAddDate='" + prAddDate + '\'' +
+                ", comment='" + comment + '\'' +
+                ", product_name='" + product_name + '\'' +
+                ", marketName='" + marketName + '\'' +
+                ", brandName='" + brandName + '\'' +
+                ", packing='" + packing + '\'' +
+                ", image='" + image + '\'' +
+                ", price=" + price +
+                ", paramIDs=" + Arrays.toString(paramIDs) +
+                ", paramValues=" + Arrays.toString(paramValues) +
+                ", paramNames=" + Arrays.toString(paramNames) +
+                ", isInMyList=" + isInMyList +
+                ", checked=" + checked +
+                ", product='" + product.allToString() + '\'' +
+                '}';
+    }
+
+    public String toStringOld() {
+        return "RealProduct{" +
+                "id=" + id +
+                ", productID=" + productID +
+                ", brandID=" + brandID +
+                ", marketID=" + marketID +
                 ", prAddDate='" + prAddDate + '\'' +
                 ", comment='" + comment + '\'' +
                 ", product_name='" + product_name + '\'' +
@@ -39,6 +65,14 @@ public class RealProduct implements Serializable {
                 ", isInMyList=" + isInMyList +
                 ", checked=" + checked +
                 '}';
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Boolean getChecked() {
@@ -151,22 +185,6 @@ public class RealProduct implements Serializable {
 
     public void setMarketID(int marketID) {
         this.marketID = marketID;
-    }
-
-    public int getPackingID() {
-        return packingID;
-    }
-
-    public void setPackingID(int packingID) {
-        this.packingID = packingID;
-    }
-
-    public int getCountryID() {
-        return countryID;
-    }
-
-    public void setCountryID(int countryID) {
-        this.countryID = countryID;
     }
 
     public String getPrAddDate() {
