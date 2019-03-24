@@ -77,34 +77,32 @@ public class AutoCompliteMarketAdapter extends ArrayAdapter<Market> {
         @Override
         protected FilterResults performFiltering(CharSequence typedtext) {
 
-            Log.d("text", typedtext.toString());
-            FilterResults results = new FilterResults();
-            List<Market> suggestion = new ArrayList<>();
+            if (typedtext != null) {
+                Log.d("text", typedtext.toString());
+                List<Market> suggestion = new ArrayList<>();
 
-            if ( typedtext.length() == 0){
-                suggestion.addAll(fullMarketList);
-            } else {
-                String filterPatern = typedtext.toString().trim();
-                String sArray[] = filterPatern.split(" ");
+                if (typedtext.length() == 0) {
+                    suggestion.addAll(fullMarketList);
+                } else {
+                    String filterPatern = typedtext.toString().trim();
+                    String sArray[] = filterPatern.split(" ");
 
-
-                for (Market item : fullMarketList){
-                    String nameAndAddress = item.getMarketName() +" "+ item.getAddress();
-                    boolean exist = true;
-                    for (String fp : sArray){
-                        if (!nameAndAddress.contains(fp)){
-                            exist = false;
+                    for (Market item : fullMarketList) {
+                        String nameAndAddress = item.getMarketName() + " " + item.getAddress();
+                        boolean exist = true;
+                        for (String fp : sArray) {
+                            if (!nameAndAddress.contains(fp)) {
+                                exist = false;
+                            }
+                        }
+                        if (exist) {
+                            suggestion.add(item);
                         }
                     }
-                    if (exist){
-                        suggestion.add(item);
-                    }
-
                 }
+                filteredMarketList = new ArrayList<>(suggestion);
             }
-
-            filteredMarketList = new ArrayList<>(suggestion);
-            return results;
+            return new FilterResults();
         }
 
         @Override

@@ -347,7 +347,8 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
     private void afterProductSelected(Product product) {
         ImageView imageView = findViewById(R.id.img_product);
         TextView tViewSelectedName = findViewById(R.id.tv_selected_product);
-        inputProduct.setText(product.toString());
+        inputProduct.setText( product.getId() == 0 ? "" : product.toString());
+        tvQrcode.setText(product.getQrCode());
 
         String productInfo = product.getName() + "\n";
         Brand brand = GlobalConstants.findBrandByID(product.getBrandID());
@@ -743,7 +744,7 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
 //            GlobalConstants.LAST_SCANED_RPROD = null;
             qrCode = data.getStringExtra(Keys.QR_SCAN_RESULT);
 
-            tvQrcode.setText(qrCode);
+//            tvQrcode.setText(qrCode);
 //            ns.getSearchedProducts(null, qrCode);
             Log.d(TAG, "- QRcode - " + qrCode);
             findProductByQr(qrCode);
@@ -757,7 +758,6 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
                 Log.d(TAG, "- Prod Found - " + qrCode);
                 newRealProduct.setProduct(product);
                 newRealProduct.setProductID(product.getId());
-                afterProductSelected(product);
                 inList = true;
                 break;
             }
@@ -766,10 +766,10 @@ public class AddActivity extends AppCompatActivity implements NetService.taskCom
             Log.d(TAG, "- Prod NOT Found - " + qrCode);
             newRealProduct.setProduct(new Product(0, ""));
             newRealProduct.getProduct().setQrCode(qrCode);
-            afterProductSelected(newRealProduct.getProduct());
+            newRealProduct.setProductID(0);
             inputProduct.setText("");
-//            inputProduct.clearComposingText();
         }
+        afterProductSelected(newRealProduct.getProduct());
     }
 
 

@@ -45,7 +45,7 @@ public class ParamInputView extends LinearLayout {
 
     public String getParamVal(){
         if (paramValue.getText().toString().isEmpty()){
-            return "0";
+            return paramValue.getHint().toString();
         }
         return paramValue.getText().toString();
     }
