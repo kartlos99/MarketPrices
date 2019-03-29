@@ -34,6 +34,7 @@ import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.ProductType;
 import diakonidze.marketprices.models.RealProduct;
+import diakonidze.marketprices.models.TableVersion;
 
 public class GlobalConstants {
 //    public static final String HOST_URL = "http://192.168.0.101/market/"; // სამსახურში
@@ -45,9 +46,10 @@ public class GlobalConstants {
     public static final String MARKET_LOGOS_FOLDER = "images/market_logos/";
 
 
-    public static final String GET_PRODUCT_LINK = HOST_URL + "get_products.php";
+    public static final String GET_PRODUCT_LINK = HOST_URL + "get_products1.php";
     public static final String INS_REAL_PROD = HOST_URL + "ins_real_prod.php";
     public static final String GET_SEARCH_RESULT = HOST_URL + "get_search_result.php";
+    public static final String GET_VERSION_STATE = HOST_URL + "get_version.php";
 
     public static Boolean COMPLITE_INITIAL_DOWNLOADS = false;
     public static RealProduct LAST_SCANED_RPROD;
@@ -65,6 +67,9 @@ public class GlobalConstants {
     public static HashMap<String, Paramiter> PARAMITERS_HASH;
     public static HashMap<String, Market> MARKETS_HASH;
     public static HashMap<String, Packing> PACKS_HASH;
+
+    public static Map<String, TableVersion> TBL_VERSIONS_L;
+    public static Map<String, TableVersion> TBL_VERSIONS_S;
 
     public static void showtext(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();

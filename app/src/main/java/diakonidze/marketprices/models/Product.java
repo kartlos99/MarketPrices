@@ -20,6 +20,11 @@ public class Product implements Serializable {
         paramValues = new String[0];
     }
 
+    public Product() {
+        paramIDs = new int[0];
+        paramValues = new String[0];
+    }
+
     public String allToString() {
         return "Product{" +
                 "id=" + id +

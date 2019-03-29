@@ -5,45 +5,42 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import diakonidze.marketprices.database.DBManager;
+import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.Packing;
+import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.util.GlobalConstants;
 import diakonidze.marketprices.util.NetService;
-import diakonidze.marketprices.QrScanActivity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
-import diakonidze.marketprices.R;
-import java.io.IOException;
+
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     // widgets
     RecyclerView recyclerView;
     SearchView searchView;
+    public static ProgressBar progressBar;
 
     // vars
 
@@ -86,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewQR;
 
     Context mContext = MainActivity.this;
-    String TAG = "mainActivity";
+    private static String TAG = "mainActivity";
     private static final int REQUEST_CODE_QR_SCAN = 101;
     private int CAMERA_PERMISION_CODE = 24;
 
@@ -96,6 +94,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        progressBar = findViewById(R.id.progress1);
+
+        if (GlobalConstants.PRODUCT_LIST == null){
+            MainActivity.progressBar.setVisibility(View.VISIBLE);
+            progressBar = findViewById(R.id.progress1);
+            progressBar.setVisibility(View.VISIBLE);
+
+            DBManager.initialaize(this);
+            DBManager.openReadable();
+            GlobalConstants.PRODUCT_LIST = DBManager.getProductList();
+            GlobalConstants.PARAMITERS = DBManager.getParamitersList();
+            GlobalConstants.PACKS = DBManager.getPacksList();
+            GlobalConstants.BRANDS = DBManager.getBrandsList();
+            GlobalConstants.MARKETS = DBManager.getMarketsList();
+            DBManager.close();
+            Log.d(TAG, "list size " + GlobalConstants.PRODUCT_LIST.size());
+            Log.d(TAG, "list size " + GlobalConstants.PARAMITERS.size());
+            Log.d(TAG, "list size " + GlobalConstants.PACKS.size());
+            Log.d(TAG, "list size " + GlobalConstants.BRANDS.size());
+            Log.d(TAG, "list size " + GlobalConstants.MARKETS.size());
+
+            GlobalConstants.PARAMITERS_HASH = new HashMap<>();
+            GlobalConstants.PACKS_HASH = new HashMap<>();
+            GlobalConstants.MARKETS_HASH = new HashMap<>();
+            for (Paramiter item : GlobalConstants.PARAMITERS){
+                GlobalConstants.PARAMITERS_HASH.put(String.valueOf(item.getId()), item);
+            }
+            for (Packing item : GlobalConstants.PACKS){
+                GlobalConstants.PACKS_HASH.put(String.valueOf(item.getId()), item);
+            }
+            for (Market item : GlobalConstants.MARKETS){
+                GlobalConstants.MARKETS_HASH.put(String.valueOf(item.getId()), item);
+            }
+            MainActivity.progressBar.setVisibility(View.INVISIBLE);
+            NetService ns = new NetService(mContext);
+            ns.checkVersionState();
+        }
+
 
         Button button = findViewById(R.id.bb);
         button.setOnClickListener(new View.OnClickListener() {
@@ -121,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                if (GlobalConstants.COMPLITE_INITIAL_DOWNLOADS) {
+                if (GlobalConstants.PRODUCT_LIST != null) {
                     switch (menuItem.getItemId()) {
                         case R.id.bnm_promotion:
 
@@ -156,18 +193,6 @@ public class MainActivity extends AppCompatActivity {
         Menu bottomMenu = bottomNavigationView.getMenu();
         MenuItem menuItem = bottomMenu.getItem(0);
         menuItem.setChecked(true);
-
-        if (!GlobalConstants.COMPLITE_INITIAL_DOWNLOADS) {
-            long time= System.currentTimeMillis();
-            Log.d(TAG, " Time value in millisecinds "+time);
-
-            NetService ns = new NetService(mContext);
-            ns.fill_prodList();
-        }
-    }
-
-    private void showText(String text) {
-        Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
     }
 
     @Override

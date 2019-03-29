@@ -2,6 +2,7 @@ package diakonidze.marketprices.util;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.Nullable;
+import diakonidze.marketprices.MainActivity;
+import diakonidze.marketprices.database.DBKeys;
+import diakonidze.marketprices.database.DBManager;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
 import diakonidze.marketprices.models.Packing;
@@ -28,6 +32,7 @@ import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
 import diakonidze.marketprices.models.ProductType;
 import diakonidze.marketprices.models.RealProduct;
+import diakonidze.marketprices.models.TableVersion;
 
 public class NetService {
     private Context netContext;
@@ -37,6 +42,372 @@ public class NetService {
     public NetService(Context netContext) {
         this.netContext = netContext;
         queue = Volley.newRequestQueue(netContext);
+    }
+
+    public void checkVersionState() {
+
+        JsonArrayRequest versionStateRequest = new JsonArrayRequest(GlobalConstants.GET_VERSION_STATE, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                Log.d(TAG, "get versions from server");
+                DBManager.initialaize(netContext);
+                DBManager.openReadable();
+                GlobalConstants.TBL_VERSIONS_L = DBManager.getVersions();
+                DBManager.close();
+                GlobalConstants.TBL_VERSIONS_S = new HashMap<>();
+
+                String tbStates = "";
+
+                for (int i = 0; i < response.length(); i++) {
+                    TableVersion tableVersionS = new TableVersion();
+                    try {
+                        JSONObject jsonTbVer = response.getJSONObject(i);
+                        tableVersionS.setTableName(jsonTbVer.getString("table_name"));
+                        tableVersionS.setVersion(jsonTbVer.getInt("version"));
+                        tableVersionS.setMaxID(jsonTbVer.getInt("maxID"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    GlobalConstants.TBL_VERSIONS_S.put(tableVersionS.getTableName(), tableVersionS);
+
+                    TableVersion localTableVersion = GlobalConstants.TBL_VERSIONS_L.get(tableVersionS.getTableName());
+                    if (localTableVersion != null) {
+                        if (tableVersionS.getVersion() > localTableVersion.getVersion()) {
+                            localTableVersion.setNeedUpdate(0);
+                        } else if (tableVersionS.getMaxID() > localTableVersion.getMaxID()) {
+                            localTableVersion.setNeedUpdate(localTableVersion.getMaxID());
+                        }
+
+                        if (localTableVersion.getNeedUpdate() >= 0) {
+                            if (!tbStates.equals("")) {
+                                tbStates += "&";
+                            }
+                            tbStates += localTableVersion.inQuery();
+                        }
+                    }
+                }
+
+                Log.d(TAG, "tbStates " + tbStates);
+                if (!tbStates.isEmpty())
+                    fill_prodList(tbStates);
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, " GET_verions : error");
+                Log.d(TAG, error.getStackTrace().toString());
+            }
+        });
+
+        queue.add(versionStateRequest);
+    }
+
+    public void fill_prodList(String tbStates) {
+
+        MainActivity.progressBar.setVisibility(View.VISIBLE);
+        if (!tbStates.equals(""))
+            tbStates = "?" + tbStates;
+
+        JsonArrayRequest productListRequest = new JsonArrayRequest(GlobalConstants.GET_PRODUCT_LINK + tbStates, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                Log.d(TAG, " GET_PRODUCT_List - come : OK");
+
+                DBManager.initialaize(netContext);
+                DBManager.openWritable();
+
+                GlobalConstants.PRODUCT_TYPES = new ArrayList<>();
+
+                JSONArray jsonProducts = new JSONArray();
+                JSONArray jsonParams = new JSONArray();
+                JSONArray jsonPacking = new JSONArray();
+                JSONArray jsonBrands = new JSONArray();
+                JSONArray jsonMarkets = new JSONArray();
+                JSONArray jsonPrTypes = new JSONArray();
+
+                // **********************************************************************************************************
+                TableVersion tbverProd = GlobalConstants.TBL_VERSIONS_L.get(DBKeys.PRODUCTS_TABLE);
+                if (tbverProd != null && tbverProd.getNeedUpdate() >= 0) {
+                    Log.d(TAG, "ganaxleba: " + tbverProd.toString());
+
+                    if (tbverProd.getNeedUpdate() == 0) {
+                        GlobalConstants.PRODUCT_LIST = new ArrayList<>();
+                        // bazashi cxrili waishalos da chaiweroes axali
+                        DBManager.dropTable(DBKeys.PRODUCTS_TABLE);
+                        DBManager.dropTable(DBKeys.PARAM_VALUE_TABLE);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_PRODUCTS);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_PARAMVALUE);
+                    }
+
+                    try {
+                        jsonProducts = response.getJSONObject(0).getJSONArray(DBKeys.PRODUCTS_TABLE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (int i = 0; i < jsonProducts.length(); i++) {
+                        try {
+                            JSONObject item = jsonProducts.getJSONObject(i);
+                            if (item != null) {
+                                Product product = new Product(item.getInt("id"), item.getString("name"));
+
+                                product.setPackID(item.getInt("packID"));
+                                product.setQrCode(item.getString("qr"));
+                                product.setTypeID(item.getInt("typeID"));
+                                product.setBrandID(item.getInt("brID"));
+
+                                JSONArray jaParamIDs = item.getJSONArray("pID");
+                                JSONArray jaParamValues = item.getJSONArray("pVal");
+                                int[] paramIDs = new int[jaParamIDs.length()];
+                                String[] paramValues = new String[jaParamIDs.length()];
+                                for (int j = 0; j < jaParamIDs.length(); j++) {
+                                    paramIDs[j] = jaParamIDs.getInt(j);
+                                    paramValues[j] = jaParamValues.getString(j);
+                                }
+                                product.setParamIDs(paramIDs);
+                                product.setParamValues(paramValues);
+
+                                if (!item.isNull("p_img")) {
+                                    product.setImage(item.getString("p_img"));
+                                } else {
+                                    product.setImage("");
+                                }
+
+                                GlobalConstants.PRODUCT_LIST.add(product);
+                                Long id = DBManager.insertNewProduct(product);
+                                if (id == -1) {
+                                    GlobalConstants.showtext(netContext, "romeligac produqti ar chaiwera localur bazashi!!!");
+                                }
+//                            Log.d(TAG, "item: " + item.toString());
+//                            Log.d(TAG, "prod: " + product.allToString());
+                            }
+                        } catch (NullPointerException e) {
+                            Log.e(TAG, e.getMessage());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    // localur tablis varsias vanaxlebt
+                    TableVersion tableVersion_s = GlobalConstants.TBL_VERSIONS_S.get(DBKeys.PRODUCTS_TABLE);
+                    if (tableVersion_s != null)
+                        DBManager.updateTableVersion(tableVersion_s);
+                }
+
+                // **********************************************************************************************************
+                TableVersion tableVersion_l = GlobalConstants.TBL_VERSIONS_L.get(DBKeys.PARAMITERS_TABLE);
+                if (tableVersion_l != null && tableVersion_l.getNeedUpdate() >= 0) {
+                    Log.d(TAG, "ganaxleba: " + tableVersion_l.toString());
+
+                    if (tableVersion_l.getNeedUpdate() == 0) {
+                        GlobalConstants.PARAMITERS_HASH = new HashMap<>();
+                        GlobalConstants.PARAMITERS = new ArrayList<>();
+                        // bazashi cxrili waishalos da chaiweroes axali
+                        DBManager.dropTable(DBKeys.PARAMITERS_TABLE);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_PARAMITERS);
+                    }
+
+                    try {
+                        jsonParams = response.getJSONObject(0).getJSONArray(DBKeys.PARAMITERS_TABLE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (int i = 0; i < jsonParams.length(); i++) {
+                        try {
+                            JSONObject item = jsonParams.getJSONObject(i);
+                            Paramiter paramiter = new Paramiter(item.getInt("id")
+                                    , item.getString("code")
+                                    , item.getString("name")
+                                    , item.getString("measureUnit")
+                            );
+                            GlobalConstants.PARAMITERS.add(paramiter);
+                            GlobalConstants.PARAMITERS_HASH.put(item.getString("id"), paramiter);
+                            DBManager.insertNewParamiter(paramiter);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    // localur tablis varsias vanaxlebt
+                    TableVersion tableVersion_s = GlobalConstants.TBL_VERSIONS_S.get(DBKeys.PARAMITERS_TABLE);
+                    if (tableVersion_s != null)
+                        DBManager.updateTableVersion(tableVersion_s);
+                }
+
+
+                // **********************************************************************************************************
+                TableVersion tableVersion_l_packs = GlobalConstants.TBL_VERSIONS_L.get(DBKeys.PACKS_TABLE);
+                if (tableVersion_l_packs != null && tableVersion_l_packs.getNeedUpdate() >= 0) {
+                    Log.d(TAG, "ganaxleba: " + tableVersion_l_packs.toString());
+
+                    if (tableVersion_l_packs.getNeedUpdate() == 0) {
+                        GlobalConstants.PACKS_HASH = new HashMap<>();
+                        GlobalConstants.PACKS = new ArrayList<>();
+                        // bazashi cxrili waishalos da chaiweroes axali
+                        DBManager.dropTable(DBKeys.PACKS_TABLE);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_PACKS);
+                    }
+
+                    try {
+                        jsonPacking = response.getJSONObject(0).getJSONArray(DBKeys.PACKS_TABLE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (int i = 0; i < jsonPacking.length(); i++) {
+                        try {
+                            JSONObject item = jsonPacking.getJSONObject(i);
+                            Packing packing = new Packing(
+                                    item.getInt("id"),
+                                    item.getString("code"),
+                                    item.getString("valueText")
+                            );
+                            GlobalConstants.PACKS.add(packing);
+                            GlobalConstants.PACKS_HASH.put(item.getString("id"), packing);
+                            DBManager.insertNewPacking(packing);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    // localur tablis varsias vanaxlebt
+                    TableVersion tableVersion_s = GlobalConstants.TBL_VERSIONS_S.get(DBKeys.PACKS_TABLE);
+                    if (tableVersion_s != null)
+                        DBManager.updateTableVersion(tableVersion_s);
+                }
+
+
+                // **********************************************************************************************************
+                TableVersion tableVersion_l_brand = GlobalConstants.TBL_VERSIONS_L.get(DBKeys.BRANDS_TABLE);
+                if (tableVersion_l_brand != null && tableVersion_l_brand.getNeedUpdate() >= 0) {
+                    Log.d(TAG, "ganaxleba: " + tableVersion_l_brand.toString());
+
+                    if (tableVersion_l_brand.getNeedUpdate() == 0) {
+                        GlobalConstants.BRANDS = new ArrayList<>();
+                        // bazashi cxrili waishalos da chaiweroes axali
+                        DBManager.dropTable(DBKeys.BRANDS_TABLE);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_BRANDS);
+                    }
+
+                    try {
+                        jsonBrands = response.getJSONObject(0).getJSONArray(DBKeys.BRANDS_TABLE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (int i = 0; i < jsonBrands.length(); i++) {
+                        try {
+                            JSONObject item = jsonBrands.getJSONObject(i);
+                            Brand brand = new Brand(
+                                    item.getInt("id"),
+                                    item.getString("brandName"),
+                                    item.getString("brandNameEng")
+                            );
+                            GlobalConstants.BRANDS.add(brand);
+                            DBManager.insertNewBrand(brand);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    // localur tablis varsias vanaxlebt
+                    TableVersion tableVersion_s = GlobalConstants.TBL_VERSIONS_S.get(DBKeys.BRANDS_TABLE);
+                    if (tableVersion_s != null)
+                        DBManager.updateTableVersion(tableVersion_s);
+                }
+
+
+                // **********************************************************************************************************
+                TableVersion tableVersion_l_market = GlobalConstants.TBL_VERSIONS_L.get(DBKeys.MARKETS_TABLE);
+                if (tableVersion_l_market != null && tableVersion_l_market.getNeedUpdate() >= 0) {
+                    Log.d(TAG, "ganaxleba: " + tableVersion_l_market.toString());
+
+                    if (tableVersion_l_market.getNeedUpdate() == 0) {
+                        GlobalConstants.MARKETS = new ArrayList<>();
+                        GlobalConstants.MARKETS_HASH = new HashMap<>();
+                        // bazashi cxrili waishalos da chaiweroes axali
+                        DBManager.dropTable(DBKeys.MARKETS_TABLE);
+                        DBManager.createTable(DBKeys.CREATE_TABLE_MARKETS);
+                    }
+
+                    try {
+                        jsonMarkets = response.getJSONObject(0).getJSONArray(DBKeys.MARKETS_TABLE);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (int i = 0; i < jsonMarkets.length(); i++) {
+                        try {
+                            JSONObject item = jsonMarkets.getJSONObject(i);
+                            Market market = new Market(
+                                    item.getInt("id"),
+                                    item.getString("marketName")
+                            );
+                            if (!item.isNull("logo")) {
+                                market.setLogo(item.getString("logo"));
+                            }
+                            market.setSn(item.getString("sn"));
+                            market.setAddress(item.getString("address"));
+                            if (!item.isNull("comment")) {
+                                market.setComment(item.getString("comment"));
+                            }
+
+                            GlobalConstants.MARKETS.add(market);
+                            GlobalConstants.MARKETS_HASH.put(item.getString("id"), market);
+                            DBManager.insertNewMarket(market);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    // localur tablis varsias vanaxlebt
+                    TableVersion tableVersion_s = GlobalConstants.TBL_VERSIONS_S.get(DBKeys.MARKETS_TABLE);
+                    if (tableVersion_s != null)
+                        DBManager.updateTableVersion(tableVersion_s);
+                }
+
+                //***************************************************************************************************************
+                for (int i = 0; i < jsonPrTypes.length(); i++) {
+                    try {
+                        JSONObject item = jsonPrTypes.getJSONObject(i);
+                        ProductType productType = new ProductType(item.getInt("id"));
+                        productType.setCode(item.getString("code"));
+                        productType.setName(item.getString("name"));
+                        productType.setImage(item.getString("image"));
+
+                        JSONArray jaPacks = item.getJSONArray("all_pack");
+                        int[] packs = new int[jaPacks.length()];
+                        for (int j = 0; j < jaPacks.length(); j++) {
+                            packs[j] = jaPacks.getInt(j);
+                        }
+                        JSONArray jaParam = item.getJSONArray("all_param");
+                        int[] params = new int[jaParam.length()];
+                        for (int j = 0; j < jaParam.length(); j++) {
+                            params[j] = jaParam.getInt(j);
+                        }
+                        productType.setAll_pack(packs);
+                        productType.setAll_param(params);
+
+                        GlobalConstants.PRODUCT_TYPES.add(productType);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Log.d(TAG, " MARKETs SIZE : " + GlobalConstants.MARKETS_HASH.size());
+
+                MainActivity.progressBar.setVisibility(View.INVISIBLE);
+                GlobalConstants.COMPLITE_INITIAL_DOWNLOADS = true;
+                long time = System.currentTimeMillis();
+                Log.d(TAG, " Time value in millisecinds " + time);
+                DBManager.close();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, " GET_PRODUCT_List - come : error");
+                Log.d(TAG, Arrays.toString(error.getStackTrace()));
+            }
+        });
+
+        queue.add(productListRequest);
     }
 
     public void getSearchedProducts(@Nullable String query, @Nullable final String qrcode) {
@@ -141,203 +512,15 @@ public class NetService {
     }
 
     private Product findProductByID(int productID) {
-        for (int i = 0 ; i < GlobalConstants.PRODUCT_LIST.size(); i++){
-            if (productID == GlobalConstants.PRODUCT_LIST.get(i).getId()){
+        for (int i = 0; i < GlobalConstants.PRODUCT_LIST.size(); i++) {
+            if (productID == GlobalConstants.PRODUCT_LIST.get(i).getId()) {
                 return GlobalConstants.PRODUCT_LIST.get(i);
             }
         }
         Log.d(TAG, "prod am ID -it ver moiZebna - " + productID);
         return null;
     }
-
     // *****************************  tavdapirveli monacemebis wamogeba  **************************
-    public void fill_prodList() {
-
-        JsonArrayRequest productListRequest = new JsonArrayRequest(GlobalConstants.GET_PRODUCT_LINK, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                Log.d(TAG, " GET_PRODUCT_List - come : OK");
-
-                GlobalConstants.PRODUCT_LIST = new ArrayList<>();
-                GlobalConstants.PARAMITERS = new ArrayList<>();
-                GlobalConstants.PACKS = new ArrayList<>();
-                GlobalConstants.BRANDS = new ArrayList<>();
-                GlobalConstants.MARKETS = new ArrayList<>();
-                GlobalConstants.PRODUCT_TYPES = new ArrayList<>();
-
-                JSONArray jsonProducts = new JSONArray();
-                JSONArray jsonParams = new JSONArray();
-                JSONArray jsonPacking = new JSONArray();
-                JSONArray jsonBrands = new JSONArray();
-                JSONArray jsonMarkets = new JSONArray();
-                JSONArray jsonPrTypes = new JSONArray();
-
-                try {
-                    jsonProducts = response.getJSONArray(0);
-                    jsonParams = response.getJSONArray(1);
-                    jsonPacking = response.getJSONArray(2);
-                    jsonBrands = response.getJSONArray(3);
-                    jsonMarkets = response.getJSONArray(4);
-                    jsonPrTypes = response.getJSONArray(5);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                for (int i = 0; i < jsonProducts.length(); i++) {
-                    try {
-
-                        JSONObject item = jsonProducts.getJSONObject(i);
-                        if (item != null) {
-                            Product product = new Product(item.getInt("id"), item.getString("name"));
-
-                            product.setPackID(item.getInt("packID"));
-                            product.setQrCode(item.getString("qr"));
-                            product.setTypeID(item.getInt("typeID"));
-                            product.setBrandID(item.getInt("brID"));
-
-                            JSONArray jaParamIDs = item.getJSONArray("pID");
-                            JSONArray jaParamValues = item.getJSONArray("pVal");
-                            int[] paramIDs = new int[jaParamIDs.length()];
-                            String[] paramValues = new String[jaParamIDs.length()];
-                            for (int j = 0; j < jaParamIDs.length(); j++) {
-                                paramIDs[j] = jaParamIDs.getInt(j);
-                                paramValues[j] = jaParamValues.getString(j);
-                            }
-                            product.setParamIDs(paramIDs);
-                            product.setParamValues(paramValues);
-
-                            if (!item.isNull("p_img")) {
-                                product.setImage(item.getString("p_img"));
-                            } else {
-                                product.setImage("");
-                            }
-
-                            GlobalConstants.PRODUCT_LIST.add(product);
-//                            Log.d(TAG, "item: " + item.toString());
-//                            Log.d(TAG, "prod: " + product.allToString());
-                        }
-
-
-                    } catch (NullPointerException e) {
-                        Log.e(TAG, e.getMessage());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                GlobalConstants.PARAMITERS_HASH = new HashMap<>();
-                for (int i = 0; i < jsonParams.length(); i++) {
-                    try {
-                        JSONObject item = jsonParams.getJSONObject(i);
-                        Paramiter paramiter = new Paramiter(item.getInt("id")
-                                , item.getString("code")
-                                , item.getString("name")
-                                , item.getString("measureUnit")
-                        );
-                        GlobalConstants.PARAMITERS.add(paramiter);
-                        GlobalConstants.PARAMITERS_HASH.put(item.getString("id"), paramiter);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                GlobalConstants.PACKS_HASH = new HashMap<>();
-                for (int i = 0; i < jsonPacking.length(); i++) {
-                    try {
-                        JSONObject item = jsonPacking.getJSONObject(i);
-                        Packing packing = new Packing(
-                                item.getInt("id"),
-                                item.getString("code"),
-                                item.getString("valueText")
-                        );
-                        GlobalConstants.PACKS.add(packing);
-                        GlobalConstants.PACKS_HASH.put(item.getString("id"), packing);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                for (int i = 0; i < jsonBrands.length(); i++) {
-                    try {
-                        JSONObject item = jsonBrands.getJSONObject(i);
-                        Brand brand = new Brand(
-                                item.getInt("id"),
-                                item.getString("brandName"),
-                                item.getString("brandNameEng")
-                        );
-                        GlobalConstants.BRANDS.add(brand);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                GlobalConstants.MARKETS_HASH = new HashMap<>();
-                for (int i = 0; i < jsonMarkets.length(); i++) {
-                    try {
-                        JSONObject item = jsonMarkets.getJSONObject(i);
-                        Market market = new Market(
-                                item.getInt("id"),
-                                item.getString("marketName")
-                        );
-                        if (!item.isNull("logo")) {
-                            market.setLogo(item.getString("logo"));
-                        }
-                        market.setSn(item.getString("sn"));
-                        market.setAddress(item.getString("address"));
-                        if (!item.isNull("comment")) {
-                            market.setComment(item.getString("comment"));
-                        }
-
-                        GlobalConstants.MARKETS.add(market);
-                        GlobalConstants.MARKETS_HASH.put(item.getString("id"), market);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                for (int i = 0; i < jsonPrTypes.length(); i++) {
-                    try {
-                        JSONObject item = jsonPrTypes.getJSONObject(i);
-                        ProductType productType = new ProductType(item.getInt("id"));
-                        productType.setCode(item.getString("code"));
-                        productType.setName(item.getString("name"));
-                        productType.setImage(item.getString("image"));
-
-                        JSONArray jaPacks = item.getJSONArray("all_pack");
-                        int[] packs = new int[jaPacks.length()];
-                        for (int j = 0; j < jaPacks.length(); j++) {
-                            packs[j] = jaPacks.getInt(j);
-                        }
-                        JSONArray jaParam = item.getJSONArray("all_param");
-                        int[] params = new int[jaParam.length()];
-                        for (int j = 0; j < jaParam.length(); j++) {
-                            params[j] = jaParam.getInt(j);
-                        }
-                        productType.setAll_pack(packs);
-                        productType.setAll_param(params);
-
-                        GlobalConstants.PRODUCT_TYPES.add(productType);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                Log.d(TAG, " MARKETs SIZE : " + GlobalConstants.MARKETS_HASH.size());
-
-                GlobalConstants.COMPLITE_INITIAL_DOWNLOADS = true;
-                long time = System.currentTimeMillis();
-                Log.d(TAG, " Time value in millisecinds " + time);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, " GET_PRODUCT_List - come : error");
-                Log.d(TAG, Arrays.toString(error.getStackTrace()));
-            }
-        });
-
-        queue.add(productListRequest);
-    }
 
     // ***********************  axali realuri produqtis chawera  ********************************
     public void insertNewRealProduct(RealProduct realProduct, String imageStr) {
@@ -361,7 +544,7 @@ public class NetService {
             }
             if (realProduct.getProduct().getQrCode() != null) {
                 params.put("qr", realProduct.getProduct().getQrCode());
-            }else {
+            } else {
                 params.put("qr", "123");
             }
         } else {
