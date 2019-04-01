@@ -3,6 +3,7 @@ package diakonidze.marketprices;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import diakonidze.marketprices.customViews.MyListItemView;
+import diakonidze.marketprices.database.DBManager;
 import diakonidze.marketprices.util.GlobalConstants;
 
 import android.content.Context;
@@ -19,7 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MyListActivity extends AppCompatActivity {
 
-    private Context mContext = MyListActivity .this;
+    private Context mContext = MyListActivity.this;
     private static final String TAG = "My_List_Activity";
 
     // wigdets
@@ -32,6 +33,15 @@ public class MyListActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        DBManager.initialaize(mContext);
+        DBManager.openWritable();
+        DBManager.saveMyList(GlobalConstants.MY_SHOPING_LIST);
+        DBManager.close();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_list);
@@ -41,16 +51,15 @@ public class MyListActivity extends AppCompatActivity {
 //        if (savedInstanceState == null) {
         Log.d(TAG, "shopListSize = " + GlobalConstants.MY_SHOPING_LIST.size());
         for (int i = 0; i < GlobalConstants.MY_SHOPING_LIST.size(); i++) {
-            if (GlobalConstants.MY_SHOPING_LIST.get(i).getChecked()){
+            if (GlobalConstants.MY_SHOPING_LIST.get(i).getChecked()) {
                 MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), true, uncheckedConteiner, checkedConteiner);
                 checkedConteiner.addView(itemView);
-            }else {
+            } else {
                 MyListItemView itemView = new MyListItemView(mContext, GlobalConstants.MY_SHOPING_LIST.get(i), false, uncheckedConteiner, checkedConteiner);
                 uncheckedConteiner.addView(itemView);
             }
         }
 //        }
-
 
 
     }
@@ -67,7 +76,7 @@ public class MyListActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                switch (menuItem.getItemId()){
+                switch (menuItem.getItemId()) {
                     case R.id.bnm_promotion:
                         Intent intent1 = new Intent(mContext, MainActivity.class);
                         startActivity(intent1);

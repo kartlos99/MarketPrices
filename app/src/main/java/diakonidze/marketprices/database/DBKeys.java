@@ -9,7 +9,7 @@ public class DBKeys {
     public static final String PACKS_TABLE = "packs";
     public static final String PARAM_VALUE_TABLE = "paramvalue";
     public static final String VERSIONS_TABLE = "versions";
-    public static final String MYLIST_TABLE = "versions";
+    public static final String MYLIST_TABLE = "myitemslist";
 
     public static final String ID = "id";
     public static final String TYPE_ID = "typeid";

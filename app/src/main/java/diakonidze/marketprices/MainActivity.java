@@ -8,6 +8,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 import diakonidze.marketprices.database.DBManager;
 import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.MyListItem;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.util.GlobalConstants;
@@ -41,6 +42,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
     private int CAMERA_PERMISION_CODE = 24;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar = findViewById(R.id.progress1);
 
-        if (GlobalConstants.PRODUCT_LIST == null){
+        if (GlobalConstants.PRODUCT_LIST == null) {
             MainActivity.progressBar.setVisibility(View.VISIBLE);
             progressBar = findViewById(R.id.progress1);
             progressBar.setVisibility(View.VISIBLE);
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
             GlobalConstants.PACKS = DBManager.getPacksList();
             GlobalConstants.BRANDS = DBManager.getBrandsList();
             GlobalConstants.MARKETS = DBManager.getMarketsList();
+            GlobalConstants.MY_ITEMS_LIST = DBManager.getMyList();
             DBManager.close();
             Log.d(TAG, "list size " + GlobalConstants.PRODUCT_LIST.size());
             Log.d(TAG, "list size " + GlobalConstants.PARAMITERS.size());
@@ -119,18 +121,28 @@ public class MainActivity extends AppCompatActivity {
             GlobalConstants.PARAMITERS_HASH = new HashMap<>();
             GlobalConstants.PACKS_HASH = new HashMap<>();
             GlobalConstants.MARKETS_HASH = new HashMap<>();
-            for (Paramiter item : GlobalConstants.PARAMITERS){
+            for (Paramiter item : GlobalConstants.PARAMITERS) {
                 GlobalConstants.PARAMITERS_HASH.put(String.valueOf(item.getId()), item);
             }
-            for (Packing item : GlobalConstants.PACKS){
+            for (Packing item : GlobalConstants.PACKS) {
                 GlobalConstants.PACKS_HASH.put(String.valueOf(item.getId()), item);
             }
-            for (Market item : GlobalConstants.MARKETS){
+            for (Market item : GlobalConstants.MARKETS) {
                 GlobalConstants.MARKETS_HASH.put(String.valueOf(item.getId()), item);
             }
             MainActivity.progressBar.setVisibility(View.INVISIBLE);
             NetService ns = new NetService(mContext);
             ns.checkVersionState();
+            if (GlobalConstants.MY_ITEMS_LIST.size() > 0) {
+                String ids = "";
+                for (int i = 0; i < GlobalConstants.MY_ITEMS_LIST.size(); i++) {
+                    ids += GlobalConstants.MY_ITEMS_LIST.get(i).getRealProdID();
+                    if (i < GlobalConstants.MY_ITEMS_LIST.size() - 1) {
+                        ids += ",";
+                    }
+                }
+                ns.getSearchedProducts(null, null, ids);
+            }
         }
 
 
@@ -199,11 +211,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode != Activity.RESULT_OK){
+        if (resultCode != Activity.RESULT_OK) {
             return;
         }
 
-        if (requestCode == REQUEST_CODE_QR_SCAN){
+        if (requestCode == REQUEST_CODE_QR_SCAN) {
             textViewQR.setText(data.getStringExtra("scan_result"));
         }
 

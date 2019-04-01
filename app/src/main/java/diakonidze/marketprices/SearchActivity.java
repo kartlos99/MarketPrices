@@ -7,6 +7,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import diakonidze.marketprices.adapters.SearchListAdapter;
+import diakonidze.marketprices.database.DBManager;
 import diakonidze.marketprices.util.GlobalConstants;
 import diakonidze.marketprices.util.Keys;
 import diakonidze.marketprices.util.NetService;
@@ -46,6 +47,15 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        DBManager.initialaize(mContext);
+        DBManager.openWritable();
+        DBManager.saveMyList(GlobalConstants.MY_SHOPING_LIST);
+        DBManager.close();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
@@ -56,15 +66,15 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
         ns.setCompliteListener(this);
 
         if (savedInstanceState != null){
-            ns.getSearchedProducts(savedInstanceState.getString("filter_text"), null);
+            ns.getSearchedProducts(savedInstanceState.getString("filter_text"), null, null);
         }else {
-            ns.getSearchedProducts("", null);
+            ns.getSearchedProducts("", null, null);
         }
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                ns.getSearchedProducts(query, null);
+                ns.getSearchedProducts(query, null, null);
                 return false;
             }
 
@@ -72,7 +82,7 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
             public boolean onQueryTextChange(String newText) {
                 Log.d(TAG, " onChange: " + newText);
                 if (newText.length() > 1 || newText.isEmpty())
-                    ns.getSearchedProducts(newText, null);
+                    ns.getSearchedProducts(newText, null, null);
                 return false;
             }
         });
@@ -150,7 +160,7 @@ public class SearchActivity extends AppCompatActivity implements NetService.task
             Log.d(TAG, "- QRcode - " + qrCode);
             TextView tv_info = findViewById(R.id.tv_filters);
             tv_info.setText("QR: " + qrCode);
-            ns.getSearchedProducts(null, qrCode);
+            ns.getSearchedProducts(null, qrCode, null);
 
         }
     }

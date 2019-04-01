@@ -29,6 +29,7 @@ import java.util.Map;
 
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.MyListItem;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
@@ -70,6 +71,8 @@ public class GlobalConstants {
 
     public static Map<String, TableVersion> TBL_VERSIONS_L;
     public static Map<String, TableVersion> TBL_VERSIONS_S;
+
+    public static List<MyListItem> MY_ITEMS_LIST;
 
     public static void showtext(Context context, String text) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();

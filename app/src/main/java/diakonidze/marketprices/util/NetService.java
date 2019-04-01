@@ -27,6 +27,7 @@ import diakonidze.marketprices.database.DBKeys;
 import diakonidze.marketprices.database.DBManager;
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.MyListItem;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
@@ -410,12 +411,16 @@ public class NetService {
         queue.add(productListRequest);
     }
 
-    public void getSearchedProducts(@Nullable String query, @Nullable final String qrcode) {
-        String url;
+    public void getSearchedProducts(@Nullable final String query, @Nullable final String qrcode, @Nullable final String myIDs) {
+        String url = GlobalConstants.GET_SEARCH_RESULT;
         if (qrcode != null) {
             url = GlobalConstants.GET_SEARCH_RESULT + "?qrcode=" + qrcode;
-        } else {
+        }
+        if (query != null) {
             url = GlobalConstants.GET_SEARCH_RESULT + "?filter_text=" + query;
+        }
+        if (myIDs != null) {
+            url = GlobalConstants.GET_SEARCH_RESULT + "?myIDs=" + myIDs;
         }
         Log.d(TAG, "search_URL: " + url);
 
@@ -473,14 +478,23 @@ public class NetService {
                         e.printStackTrace();
                     }
 
-                    for (int ii = 0; ii < GlobalConstants.MY_SHOPING_LIST.size(); ii++) {
-                        if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(ii).getId()) {
-                            realProduct.setInMyList(true);
-                            break;
-                        }
-                    }
-
                     realProduct.setProduct(findProductByID(realProduct.getProductID()));
+
+                    if (myIDs == null) {
+                        for (int ii = 0; ii < GlobalConstants.MY_SHOPING_LIST.size(); ii++) {
+                            if (realProduct.getId() == GlobalConstants.MY_SHOPING_LIST.get(ii).getId()) {
+                                realProduct.setInMyList(true);
+                                break;
+                            }
+                        }
+                    }else {
+                        for (MyListItem item : GlobalConstants.MY_ITEMS_LIST){
+                            if (item.getRealProdID() == realProduct.getId()){
+                                realProduct.setChecked(item.getChecked());
+                            }
+                        }
+                        GlobalConstants.MY_SHOPING_LIST.add(realProduct);
+                    }
 
                     Log.d(TAG, realProduct.toString());
 //                    if (qrcode == null) {
@@ -494,7 +508,8 @@ public class NetService {
                 if (qrcode != null && GlobalConstants.SEARCH_RESULT_LIST.size() > 0) {
                     GlobalConstants.LAST_SCANED_RPROD = GlobalConstants.SEARCH_RESULT_LIST.get(0);
                     compliteListener.onComplite(Keys.PROD_SEARCH_QR);
-                } else {
+                }
+                if (query != null){
                     compliteListener.onComplite(Keys.PROD_SEARCH);
                 }
 

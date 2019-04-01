@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Point;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -13,9 +14,11 @@ import java.util.Map;
 
 import diakonidze.marketprices.models.Brand;
 import diakonidze.marketprices.models.Market;
+import diakonidze.marketprices.models.MyListItem;
 import diakonidze.marketprices.models.Packing;
 import diakonidze.marketprices.models.Paramiter;
 import diakonidze.marketprices.models.Product;
+import diakonidze.marketprices.models.RealProduct;
 import diakonidze.marketprices.models.TableVersion;
 
 public class DBManager {
@@ -93,11 +96,11 @@ public class DBManager {
         while (i < pvSize) {
             int curSize = 1;
             int curProdID = pvList.get(i).prodID;
-            if ( i + curSize < pvSize) {
+            if (i + curSize < pvSize) {
                 while (curProdID == pvList.get(i + curSize).prodID && notEnd) {
-                    if ( i + curSize + 1 == pvSize) {
+                    if (i + curSize + 1 == pvSize) {
                         notEnd = false;
-                    }else {
+                    } else {
                         curSize++;
                     }
                 }
@@ -301,5 +304,43 @@ public class DBManager {
         values.put(DBKeys.CODE, packing.getCode());
         values.put(DBKeys.VALUE_TEXT, packing.getValue());
         db.insert(DBKeys.PACKS_TABLE, null, values);
+    }
+
+    public static void insertShopingItem(int id, int isChecked) {
+        ContentValues values = new ContentValues();
+        values.put(DBKeys.REAL_PR_ID, id);
+        values.put(DBKeys.IS_CHECKED, isChecked);
+        db.insert(DBKeys.MYLIST_TABLE, null, values);
+    }
+//
+//    public static void deleteShopingItem(int id) {
+//        db.delete(DBKeys.MYLIST_TABLE, DBKeys.REAL_PR_ID + " = " + id, null);
+//    }
+
+    public static List<MyListItem> getMyList() {
+        Log.d(TAG, "select data from " + DBKeys.BRANDS_TABLE);
+        List<MyListItem> myListItems = new ArrayList<>();
+        Cursor cursor = db.rawQuery("select * from " + DBKeys.MYLIST_TABLE, null);
+        if (cursor.moveToFirst()) {
+            do {
+                MyListItem item = new MyListItem();
+                item.setRealProdID(cursor.getInt(0));
+                item.setChecked(cursor.getInt(1) == 1);
+                myListItems.add(item);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return myListItems;
+    }
+
+    public static void saveMyList(List<RealProduct> myItemList) {
+
+        db.delete(DBKeys.MYLIST_TABLE, null, null);
+
+        if (myItemList.size() > 0) {
+            for (int i = 0; i < myItemList.size(); i++) {
+                insertShopingItem(myItemList.get(i).getId(), myItemList.get(i).getChecked() ? 1 : 0);
+            }
+        }
     }
 }
